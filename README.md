@@ -1,16 +1,30 @@
-# React + Vite
+# Del Norte High School Campus Navigation PWA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A serverless, client-side Progressive Web Application (PWA) designed to alleviate transition anxiety for incoming freshmen at Del Norte High School (DNHS). 
 
-Currently, two official plugins are available:
+The application accepts image uploads or screenshots of unstructured student schedules, processes the text natively on-device, and maps out chronological, obstacle-avoiding transit routes across the campus footprint without relying on an external database backend or central servers.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Core Architectural Features
 
-## React Compiler
+*   **Client-Side Identity Session:** Bypasses friction-heavy traditional login gates using a non-intrusive modal overlay. Onboarding configurations persist using browser-native `localStorage`.
+*   **High-Fidelity Spatial Mapping:** Integrates a mobile-responsive vector canvas centered precisely on the geographic coordinates of the Del Norte High School campus layout.
+*   **Obstacle-Avoiding Pathfinding Engine:** Manages a localized node-waypoint graph system inside static data modules to route students along open outdoor walkways, avoiding building structures.
+*   **On-Device Computer Vision (OCR):** Utilizes `Tesseract.js` to execute character recognition loops directly inside the client's smartphone browser to parse raw text streams from schedule photos.
+*   **Serverless LLM Orchestration:** Pipelines chaotic schedule text into structured JSON arrays matching validated campus map node coordinates via serverless API integrations.
+*   **DNHS Bell Schedule Widget:** Features a persistent real-time banner tracking passing period countdown constraints using standard internal JavaScript interval clocks.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Built With
 
-## Expanding the ESLint configuration
+*   **React + Vite** - Frontend framework and local compilation engine
+*   **Leaflet & React-Leaflet** - Mobile-friendly interactive mapping modules
+*   **Tesseract.js** - On-device Convolutional Neural Network (CNN) for OCR processing
+*   **GitHub Actions** - Automated CI/CD production build compilation pipeline
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Proprietary License & Intellectual Property Tracking
+
+This software and all accompanying documentation files are proprietary and confidential. 
+
+**All Rights Reserved.** Unauthorized copying, modification, distribution, hosting, or reproduction of this software via any medium is strictly prohibited. The source code is made public exclusively for collegiate application portfolio review and verification of development timestamps.
+
+---
+*Developed independently by Arnav210. Chronological version history cryptographically signed and tracked via Git.*
