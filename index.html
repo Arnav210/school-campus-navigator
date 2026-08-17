@@ -7,6 +7,20 @@
     <title>school-campus-navigator</title>
   </head>
   <body>
+      <script type="text/javascript">
+        // Intercept incoming single-page app redirection states from our 404 handler
+        (function(l) {
+          if (l.search[1] === 'p' ) {
+            var decoded = l.search.slice(3).replace(/~and~/g, '&');
+            if (decoded.lastIndexOf('/') !== -1) {
+              decoded = decoded.slice(0, decoded.lastIndexOf('/')) + '/' + decoded.slice(decoded.lastIndexOf('/') + 1);
+            }
+            window.history.replaceState(null, null,
+              l.pathname.slice(0, l.pathname.lastIndexOf('/')) + '/' + decoded + l.search + l.hash
+            );
+          }
+        }(window.location));
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
