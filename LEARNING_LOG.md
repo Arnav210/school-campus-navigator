@@ -129,7 +129,6 @@ export default App;
   public class App { ... }
   ```
 
-
 ---
 
 ## Module 1.5: GitHub Pages Deep-Linking Mitigation (The 404 Routing Hack)
@@ -191,5 +190,37 @@ export default App;
   String[] slicedArray = Arrays.copyOfRange(pathArray, 0, 1 + pathSegmentsToKeep);
   String cleanRoot = String.join("/", slicedArray) + "/?p=";
   ```
+
+---
+
+## Module 2: High-Fidelity Geolocation Mapping & Fluid UI Responsiveness
+
+### 1. Production Code Blueprint (`src/pages/MapPage.jsx`)
+```jsx
+<div style={{ width: '100%', height: '85vh' }}>
+  <MapContainer center={[33.0144, -117.1222]} zoom={17} style={{ height: '100%', width: '100%' }}>
+    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+  </MapContainer>
+</div>
+```
+
+### 2. Line-by-Line Granular Code Interrogation
+
+#### Line segment: `width: '100%', minHeight: '100vh'`
+* **Technical Mechanics:** Eliminates static layout dimensions. Setting the structural container width to `100%` instructs the layout engine to poll the user's monitor browser window dimensions and scale fluidly to match it. `100vh` sets the minimum height boundary to fill exactly 100% of the active **Viewport Height** grid layout.
+* **AP CSA Java Analogy:** Modifying visual dimension constraints dynamically inside an object window initializer:
+  ```java
+  this.setSize(window.getScreenWidth(), window.getScreenHeight());
+  ```
+
+#### Line segment: `const dnhsCoordinates = [33.0144, -117.1222];`
+* **Technical Mechanics:** Corrects the spatial coordinates vector array to lock onto the true roof layout lines of the central DNHS courtyard complex. Coordinates utilize double-precision mathematical values.
+* **AP CSA Java Analogy:** Initializing a final primitive tracking array configuration attribute:
+  ```java
+  final double[] dnhsCoordinates = {33.0144, -117.1222};
+  ```
+
+#### Line segment: `zoom={17}`
+* **Technical Mechanics:** Configures the initial level of detail parameter for the map canvas zoom layer. Level 17 scales the viewport magnification to focus directly on the individual campus building boundaries while hiding extraneous city traffic roads.
 
 ---
