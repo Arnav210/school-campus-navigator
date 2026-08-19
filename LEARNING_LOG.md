@@ -33,105 +33,26 @@ function App() {
 export default App;
 ```
 
----
+### 2. Line-by-Line Mechanics & AP CSA Analogy
 
-### 2. Line-by-Line Granular Code Interrogation
-
-#### Line 1: `import React from 'react';`
-* **Technical Mechanics:** Instructs the JavaScript engine to pull the core React engine out of the local `node_modules` cache folder. This initializes the JSX element compiler so the browser can understand visual tags mixed inside logic files.
-* **AP CSA Java Analogy:** Operates like a standard class path import:
+#### Line: `import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';`
+* **Technical Mechanics:** Uses **Named Destructuring** via curly braces `{}` to cherry-pick specific class-like structural tools out of the router library package, minimizing memory bundle sizes on local mobile devices.
+* **AP CSA Analogy:** Mimics target dependency path selection imports:
   ```java
-  import core.framework.React;
+  import java.util.ArrayList; // Loads only ArrayList, not all of java.util
   ```
 
-#### Line 2: `import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';`
-* **Technical Mechanics:** Uses **Named Destructuring** via curly braces `{}` to cherry-pick four highly specific class-like structural utilities from the `react-router-dom` library package. This avoids importing the entire library namespace into memory, optimizing local phone performance.
-* **AP CSA Java Analogy:** Functions like importing explicit class tools out of a package layout:
+#### Line: `const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding') === 'true';`
+* **Technical Mechanics:** Queries browser memory. Because `localStorage` natively tracks key data as pure text strings, appending the strict equality operator `=== 'true'` explicitly resolves that text check into a native primitive boolean variable (`true` or `false`).
+* **AP CSA Analogy:** Functions identically to reading parameters from an instantiated map dictionary:
   ```java
-  import java.util.ArrayList; // Imports only ArrayList, not all of java.util
-  ```
-
-#### Line 3: `import OnboardingPage from './pages/OnboardingPage';`
-#### Line 4: `import MapPage from './pages/MapPage';`
-* **Technical Mechanics:** Establishes direct file relative paths (`./`) pointing to your custom decoupled child page files. This treats those external visual files as discrete instantiable modules inside this file scope.
-* **AP CSA Java Analogy:** Pulling user-defined classes inside the same workspace project package:
-  ```java
-  OnboardingPage pageInstance = new OnboardingPage();
-  ```
-
-#### Line 6: `function App() {`
-* **Technical Mechanics:** Declares the master structural functional component. In React, a component is simply a JavaScript function that evaluates logic and returns visual HTML layout layouts (JSX).
-* **AP CSA Java Analogy:** Declares the public driver class or main execution block:
-  ```java
-  public class App {
-  ```
-
-#### Line 8: `const hasCompletedOnboarding = localStorage.getItem('hasCompletedOnboarding') === 'true';`
-* **Technical Mechanics:** 
-  1. `const`: Declares an immutable block constant variable (functions like `final` in Java).
-  2. `localStorage.getItem('key')`: Queries the browser's persistent web data store disk space for a key matching that string name.
-  3. `=== 'true'`: **Critical Step.** Because `localStorage` can only read and write raw text strings, it returns `"true"` as text, not a primitive boolean `true`. The strict equality operator `===` cross-references the string value against the text `'true'` and outputs a native JavaScript boolean primitive (`true` or `false`) into `hasCompletedOnboarding`.
-* **AP CSA Java Analogy:** Functions identically to reading a localized map data collection dictionary:
-  ```java
-  final HashMap<String, String> localStorage = new HashMap<>();
-  final boolean hasCompletedOnboarding = localStorage.get("hasCompletedOnboarding").equals("true");
-  ```
-
-#### Line 10: `return (`
-* **Technical Mechanics:** Instructs the React component function to halt logic processing and output the visual layout tree structure wrapped within the following parentheses block to render on the client's screen.
-* **AP CSA Java Analogy:** Traces identically to a method's object return call statement:
-  ```java
-  return visualUIObject;
-  ```
-
-#### Line 11: `<BrowserRouter basename="/school-campus-navigator">`
-* **Technical Mechanics:** Instantiates the primary routing container. It sets up a background tracking listener loop over the browser window address bar history. The `basename` string configuration parameter safely hardcodes the subfolder URL root, ensuring the router functions perfectly inside a GitHub Pages directory instead of breaking at the server root domain.
-* **AP CSA Java Analogy:** Initializing a primary monitoring system object container with custom path variables inside the constructor:
-  ```java
-  BrowserRouter router = new BrowserRouter("/school-campus-navigator");
-  ```
-
-#### Line 12: `<Routes>`
-* **Technical Mechanics:** Configures the master virtual routing switchboard block. Every time the browser URL address changes, this wrapper scans through its internal child route arrays line-by-line to select the first valid match.
-* **AP CSA Java Analogy:** Operates exactly like a structural `switch` control layout statement:
-  ```java
-  switch(currentURLPath) {
-  ```
-
-#### Lines 13–16: `<Route path="/" element={hasCompletedOnboarding ? <Navigate to="/map" /> : <Navigate to="/onboarding" />} />`
-* **Technical Mechanics:** 
-  1. `path="/"`: Listens to the absolute base root path location of the site.
-  2. `element={...}`: Executes a dynamic statement portal via curly braces `{}` containing an inline **Ternary Operator Conditional Check** (`condition ? expressionIfTrue : expressionIfFalse`).
-  3. **The Control Flow:** If the boolean evaluates to `true`, it mounts the `<Navigate>` tracking element to instantly rewrite the browser URL address history to `/map`. If it is `false`, it forces an immediate detour redirect to `/onboarding`.
-* **AP CSA Java Analogy:** Traces directly to an inline shorthand evaluation expression inside a switch case condition:
-  ```java
-  case "/":
-      if (hasCompletedOnboarding == true) { return new Navigate("/map"); }
-      else { return new Navigate("/onboarding"); }
-  ```
-
-#### Line 17: `<Route path="/onboarding" element={<OnboardingPage />} />`
-#### Line 18: `<Route path="/map" element={<MapPage />} />`
-* **Technical Mechanics:** Registers clear destination guard houses. If the browser address matches `/onboarding`, it executes the `OnboardingPage()` constructor to inject Screen 1's UI layer onto the screen. If it matches `/map`, it safely instantiates the `MapPage()` layout.
-* **AP CSA Java Analogy:** Finalizing individual case block execution paths:
-  ```java
-  case "/onboarding": return new OnboardingPage();
-  case "/map":        return new MapPage();
-  ```
-
-#### Lines 20–21: `</Routes> </BrowserRouter> ); }`
-* **Technical Mechanics:** Cleanly closes out the virtual layouts tags tree nested children arrays, finalizes the function declaration scope, and completes the executable runtime engine block.
-
-#### Line 24: `export default App;`
-* **Technical Mechanics:** Declares the `App` component function as the default public export module of this physical file layout, allowing the entry root index script (`main.jsx`) to safely locate, import, and mount it into the structural HTML browser window layout frame.
-* **AP CSA Java Analogy:** Making a class public and visible to external compiler builders outside the local sub-package directory:
-  ```java
-  public class App { ... }
+  HashMap<String, String> localStorage = new HashMap<>();
+  boolean hasCompletedOnboarding = localStorage.get("hasCompletedOnboarding").equals("true");
   ```
 
 ---
 
-## Module 1.5: GitHub Pages Deep-Linking Mitigation (The 404 Routing Hack)
+## Module 1.5: Client-Side Path Interception (The 404 Routing Hack)
 
 ### 1. Production Code Blueprint (`public/404.html`)
 ```html
@@ -148,79 +69,123 @@ export default App;
 </script>
 ```
 
-### 2. Line-by-Line Granular Script Interrogation
-
-#### Line: `var pathSegmentsToKeep = 1;`
-* **Technical Mechanics:** Allocates a local integer index variable. This indicates how many directory layers represent the static project root folder. For GitHub Pages hosting, this is exactly `1` slot (matching `/school-campus-navigator`).
-* **AP CSA Java Analogy:** Declares a local constant configuration identifier:
-  ```java
-  int pathSegmentsToKeep = 1;
-  ```
-
-#### Line: `var l = window.location;`
-* **Technical Mechanics:** Creates a local alias pointer caching the browser's global location object mapping context. This gives the script access to the browser toolbar's current network state and routing attributes.
-* **AP CSA Java Analogy:** Assigns a reference handle variable pointing to a system parameter state object:
-  ```java
-  Location l = Window.getLocation();
-  ```
-
-#### Line: `l.replace( ... );`
-* **Technical Mechanics:** Invokes the location object's core override method. This replaces the active web historical slot with a new constructed path layout string, immediately redirecting the viewport engine without causing browser backtracking loops.
-* **AP CSA Java Analogy:** Calls a setter/mutator method on an object reference instance:
-  ```java
-  l.replace(newPathString);
-  ```
-
-#### Line segment: `l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '')`
-* **Technical Mechanics:** Dynamically reconstructs the absolute base origin address string. It reads the protocol method (`https:`), appends domain indicators (`//arnav210.github.io`), and checks if a localized port exists using a short ternary evaluation string operator.
-* **AP CSA Java Analogy:** Executes sequence string concatenations using object attribute returns:
-  ```java
-  String origin = l.getProtocol() + "//" + l.getHostname();
-  ```
-
-#### Line segment: `l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?p='`
-* **Technical Mechanics:** 
-  1. `.split('/')`: Breaks your routing path text string down into an array of isolated substring index components using the forward slash as an item boundary.
-  2. `.slice(...)`: Performs an operational extract loop over the array elements, copying only the primary repository title index layer.
-  3. `.join('/')`: Glues the array values back together into a structured text string.
-  4. `+ '/?p='`: Appends a query search parameter flag. This packages whatever path broken route string the user originally requested (like `/map`) into a safe text value variable appended straight onto your home route landing directory.
-* **AP CSA Java Analogy:** Traces identically to standard String tracking manipulations, Array copying ranges, and indexing loops:
-  ```java
-  String[] pathArray = l.getPathname().split("/");
-  String[] slicedArray = Arrays.copyOfRange(pathArray, 0, 1 + pathSegmentsToKeep);
-  String cleanRoot = String.join("/", slicedArray) + "/?p=";
-  ```
+### 2. Mechanics Breakdown
+* **The Static Host Trap:** Static file hosting services (GitHub Pages) do not understand virtual routing layers. Manual URL adjustments or window refreshes on paths like `/map` bypass React and throw server-side crashes.
+* **The Redirection Intercept:** The script splits the target path string components into arrays (`.split('/')`), extracts the subfolder root name via pointer slicing ranges (`.slice()`), and converts the requested deep link into a plain text URL query token. It forces an instantaneous fallback redirect (`l.replace`) to the central `index.html` file layout where React Router can catch and parse it without showing a browser error screen.
 
 ---
 
-## Module 2: High-Fidelity Geolocation Mapping & Fluid UI Responsiveness
+## Module 2: High-Precision Landmark Waypoint Mapping
 
 ### 1. Production Code Blueprint (`src/pages/MapPage.jsx`)
 ```jsx
-<div style={{ width: '100%', height: '85vh' }}>
-  <MapContainer center={[33.0144, -117.1222]} zoom={17} style={{ height: '100%', width: '100%' }}>
-    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-  </MapContainer>
-</div>
+import React from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { dnhsNodes } from '../campusData';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+
+const parsedIconSize = '25,41'.split(',').map(Number);
+const parsedIconAnchor = '12,41'.split(',').map(Number);
+
+let DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: parsedIconSize,
+  iconAnchor: parsedIconAnchor
+});
+L.Marker.prototype.options.icon = DefaultIcon;
+
+function MapPage() {
+  const dnhsCenter = [33.01447, -117.12146];
+  const dnhsMaxBounds = [[33.0175, -117.1255], [33.0115, -117.1175]];
+
+  return (
+    <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      <div style={{ width: '100%', height: '85vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd' }}>
+        <MapContainer center={dnhsCenter} zoom={18} minZoom={17} maxZoom={19} maxBounds={dnhsMaxBounds} maxBoundsViscosity={1.0} style={{ height: '100%', width: '100%' }}>
+          <TileLayer attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {Object.keys(dnhsNodes).map((nodeName, index) => (
+            <Marker key={index} position={dnhsNodes[nodeName]} draggable={false}>
+              <Popup>
+                <strong style={{ color: '#0070f3' }}>{nodeName}</strong><br />
+                Destination anchor point. Tapping this room on your schedule draws a path to this door.
+              </Popup>
+            </Marker>
+          ))}
+        </MapContainer>
+      </div>
+    </div>
+  );
+}
+
+export default MapPage;
 ```
 
-### 2. Line-by-Line Granular Code Interrogation
-
-#### Line segment: `width: '100%', minHeight: '100vh'`
-* **Technical Mechanics:** Eliminates static layout dimensions. Setting the structural container width to `100%` instructs the layout engine to poll the user's monitor browser window dimensions and scale fluidly to match it. `100vh` sets the minimum height boundary to fill exactly 100% of the active **Viewport Height** grid layout.
-* **AP CSA Java Analogy:** Modifying visual dimension constraints dynamically inside an object window initializer:
+### 2. Mechanics Breakdown
+* **Prototype Customization:** Overriding the internal global prototype configuration parameters (`L.Marker.prototype.options.icon`) manually resolves an asset path breaking issue native to production compilers (Vite), explicitly linking spatial pointers to hot-linked icon image resources.
+* **Viewport Tracking Constraints:** Passing custom parameter constraints like `maxBoundsViscosity={1.0}` and `minZoom={17}` locks the user viewport camera context strictly onto the school building footprint lines, blocking panning access to extraneous map regions.
+* **Reflection Collection Processing:** Evaluating `{Object.keys(dnhsNodes).map()}` acts like an advanced reflection algorithm array loop. It reads the string descriptors from our data dictionary ledger as a linear index layout collection, running an iterative loop to dynamically instantiate a separate visual `<Marker>` layer tracking to that key's coordinates array.
+* **AP CSA Analogy:** Works identically to utilizing a key set lookup traversal loop across a Java data structure map:
   ```java
-  this.setSize(window.getScreenWidth(), window.getScreenHeight());
+  for(String nodeName : dnhsNodes.keySet()) {
+      double[] coords = dnhsNodes.get(nodeName);
+      map.addMarker(new Marker(nodeName, coords));
+  }
   ```
-
-#### Line segment: `const dnhsCoordinates = [33.0144, -117.1222];`
-* **Technical Mechanics:** Corrects the spatial coordinates vector array to lock onto the true roof layout lines of the central DNHS courtyard complex. Coordinates utilize double-precision mathematical values.
-* **AP CSA Java Analogy:** Initializing a final primitive tracking array configuration attribute:
-  ```java
-  final double[] dnhsCoordinates = {33.0144, -117.1222};
-  ```
-
-#### Line segment: `zoom={17}`
-* **Technical Mechanics:** Configures the initial level of detail parameter for the map canvas zoom layer. Level 17 scales the viewport magnification to focus directly on the individual campus building boundaries while hiding extraneous city traffic roads.
 
 ---
+
+## Module 3: Stateful User Profiling & Optional Local Storage Caching
+
+### 1. Production Code Blueprint (`src/pages/OnboardingPage.jsx`)
+```jsx
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function OnboardingPage() {
+  const navigate = useNavigate();
+  const [name, setName] = useState('');
+  const [grade, setGrade] = useState('9');
+  const [morningSpot, setMorningSpot] = useState('The Hawk Central Quad');
+  const [officeHoursSpot, setOfficeHoursSpot] = useState('Campus Library');
+  const [lunchSpot, setLunchSpot] = useState('The Hawk Central Quad');
+
+  const handleOnboardingSubmit = (e) => {
+    e.preventDefault();
+    localStorage.setItem('studentName', name || 'Del Norte Guest');
+    localStorage.setItem('studentGrade', grade);
+    localStorage.setItem('morningSpot', morningSpot);
+    localStorage.setItem('officeHoursSpot', officeHoursSpot);
+    localStorage.setItem('lunchSpot', lunchSpot);
+    localStorage.setItem('hasCompletedOnboarding', 'true');
+    navigate('/map');
+  };
+
+  return (
+    <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f2f5' }}>
+      <form onSubmit={handleOnboardingSubmit} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '100%', maxWidth: '450px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h2>Welcome to Del Norte Navigator!</h2>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 'bold' }}>What is your name?</label>
+          <input type="text" placeholder="Enter your name (Optional)" value={name} onChange={(e) => setName(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc' }} />
+        </div>
+        {/* Dropdowns use unified layout configurations mapped identically to state mutators */}
+        <button type="submit" style={{ marginTop: '10px', padding: '14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
+          Get Started
+        </button>
+      </form>
+    </div>
+  );
+}
+
+export default OnboardingPage;
+```
+
+### 2. Line-by-Line Mechanics & AP CSA Analogy
+
+#### Line segment: `const [name, setName] = useState('');`
