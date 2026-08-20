@@ -1,5 +1,5 @@
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import { dnhsNodes } from '../campusData';
 import 'leaflet/dist/leaflet.css';
 
@@ -20,26 +20,44 @@ let DefaultIcon = L.icon({
 L.Marker.prototype.options.icon = DefaultIcon;
 
 function MapPage() {
-  // Core map focal center coordinate array
   const dnhsCenter = [33.01447, -117.12146];
+  const dnhsMaxBounds = [[33.0175, -117.1255], [33.0115, -117.1175]];
 
-  // Hard boundary limits: User cannot drag or scroll past these edge limits [Top-Left, Bottom-Right]
-  const dnhsMaxBounds = [
-    [33.0175, -117.1255], // Northwest boundary edge
-    [33.0115, -117.1175]  // Southeast boundary edge
-  ];
+  // Reactive state hooks capturing dropdown room/building selections
+  const [startLocation, setStartLocation] = useState('');
+  const [endLocation, setEndLocation] = useState('');
+  
+  // State tracking array holding the current path coordinates to paint on screen
+  const [activeRoutePath, setActiveRoutePath] = useState(null);
+
+  const handleGenerateRoute = (e) => {
+    e.preventDefault();
+
+    // Look up the exact coordinate pairs for both selected locations from our database file
+    const startCoordinates = dnhsNodes[startLocation];
+    const endCoordinates = dnhsNodes[endLocation];
+
+    if (startCoordinates && endCoordinates) {
+      // Create a clean path array directly connecting the two point nodes
+      const routeLineMatrix = [startCoordinates, endCoordinates];
+      
+      // Update tracking state to instantly draw the straight vector path line on the map canvas
+      setActiveRoutePath(routeLineMatrix);
+    }
+  };
 
   return (
-    <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+    <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#f8f9fa' }}>
       
-      <div style={{ width: '100%', height: '85vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd' }}>
+      {/* Map Viewport Box Container */}
+      <div style={{ width: '100%', height: '70vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd', marginBottom: '20px' }}>
         <MapContainer 
           center={dnhsCenter} 
           zoom={18} 
-          minZoom={17}           // Prevents zooming out to see the rest of San Diego
-          maxZoom={19}           // Locks maximum clear high-density view magnification
-          maxBounds={dnhsMaxBounds} // Forces viewport to snap back if user drags past school boundaries
-          maxBoundsViscosity={1.0}  // 1.0 means completely solid walls; map won't even wiggle past bounds
+          minZoom={17} 
+          maxZoom={18}
+          maxBounds={dnhsMaxBounds} 
+          maxBoundsViscosity={1.0} 
           style={{ height: '100%', width: '100%' }}
         >
           <TileLayer
@@ -47,17 +65,62 @@ function MapPage() {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
+          {/* Render your permanently calibrated, hand-positioned building landmark markers */}
           {Object.keys(dnhsNodes).map((nodeName, index) => (
             <Marker key={index} position={dnhsNodes[nodeName]} draggable={false}>
               <Popup>
                 <strong style={{ color: '#0070f3' }}>{nodeName}</strong><br />
-                Destination anchor point. Tapping this room on your schedule draws a path to this door.
+                Campus routing destination.
               </Popup>
             </Marker>
           ))}
 
+          {/* Live Path Routing Vector Line */}
+          {activeRoutePath && (
+            <Polyline 
+              positions={activeRoutePath} 
+              pathOptions={{ color: '#0070f3', weight: 5, opacity: 0.9, lineCap: 'round', dashArray: '5, 10' }} 
+            />
+          )}
+
         </MapContainer>
       </div>
+
+      {/* Manual Route Selection Control Panel */}
+      <form onSubmit={handleGenerateRoute} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', border: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <h4 style={{ margin: '0 0 5px 0', color: '#0070f3' }}>🧭 Route Planning Interface</h4>
+        
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
+          
+          {/* Start Point Dropdown Menu */}
+          <div style={{ flex: '1', minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#555' }}>Starting Location / Building</label>
+            <select value={startLocation} onChange={(e) => setStartLocation(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: 'white', fontSize: '14px' }}>
+              <option value="">-- Select Start Point --</option>
+              {Object.keys(dnhsNodes).map((roomName) => (
+                <option key={roomName} value={roomName}>{roomName}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* End Point Dropdown Menu */}
+          <div style={{ flex: '1', minWidth: '200px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#555' }}>Target Destination / Building</label>
+            <select value={endLocation} onChange={(e) => setEndLocation(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', backgroundColor: 'white', fontSize: '14px' }}>
+              <option value="">-- Select Destination --</option>
+              {Object.keys(dnhsNodes).map((roomName) => (
+                <option key={roomName} value={roomName}>{roomName}</option>
+              ))}
+            </select>
+          </div>
+
+        </div>
+
+        {/* Action Ingestion Trigger Button */}
+        <button type="submit" disabled={!startLocation || !endLocation} style={{ padding: '12px', backgroundColor: (!startLocation || !endLocation) ? '#ccc' : '#0070f3', color: 'white', border: 'none', borderRadius: '6px', fontSize: '15px', fontWeight: 'bold', cursor: (!startLocation || !endLocation) ? 'not-allowed' : 'pointer' }}>
+          Find Shortest Walking Route
+        </button>
+      </form>
 
     </div>
   );
