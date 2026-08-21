@@ -29,8 +29,6 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;
 ```
 
 ### 2. Line-by-Line Mechanics & AP CSA Analogy
@@ -75,117 +73,50 @@ export default App;
 
 ---
 
-## Module 2: High-Precision Landmark Waypoint Mapping
+## Module 2: Architectural Separation of Public Markers & Adjacency Grids
 
-### 1. Production Code Blueprint (`src/pages/MapPage.jsx`)
-```jsx
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { dnhsNodes } from '../campusData';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+### 1. Production Data Backbone (`src/campusData.js`)
+```javascript
+export const dnhsLandmarks = {
+  "A Building (Administration & Counseling)": [33.01493, -117.12160]
+};
 
-const parsedIconSize = '25,41'.split(',').map(Number);
-const parsedIconAnchor = '12,41'.split(',').map(Number);
+export const dnhsRoutingGrid = {
+  "Node_5040": [33.01463, -117.12179],
+  "Node_6659": [33.01470, -117.12174]
+};
 
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: parsedIconSize,
-  iconAnchor: parsedIconAnchor
-});
-L.Marker.prototype.options.icon = DefaultIcon;
-
-function MapPage() {
-  const dnhsCenter = [33.01447, -117.12146];
-  const dnhsMaxBounds = [[33.0175, -117.1255], [33.0115, -117.1175]];
-
-  return (
-    <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      <div style={{ width: '100%', height: '85vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd' }}>
-        <MapContainer center={dnhsCenter} zoom={18} minZoom={17} maxZoom={19} maxBounds={dnhsMaxBounds} maxBoundsViscosity={1.0} style={{ height: '100%', width: '100%' }}>
-          <TileLayer attribution='&copy; <a href="https://openstreetmap.org">OpenStreetMap</a> contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {Object.keys(dnhsNodes).map((nodeName, index) => (
-            <Marker key={index} position={dnhsNodes[nodeName]} draggable={false}>
-              <Popup>
-                <strong style={{ color: '#0070f3' }}>{nodeName}</strong><br />
-                Destination anchor point. Tapping this room on your schedule draws a path to this door.
-              </Popup>
-            </Marker>
-          ))}
-        </MapContainer>
-      </div>
-    </div>
-  );
-}
-
-export default MapPage;
+export const dnhsPaths = {
+  "Node_5040": ["Node_6659", "Node_6853", "Node_9260"]
+};
 ```
 
-### 2. Mechanics Breakdown
-* **Prototype Customization:** Overriding the internal global prototype configuration parameters (`L.Marker.prototype.options.icon`) manually resolves an asset path breaking issue native to production compilers (Vite), explicitly linking spatial pointers to hot-linked icon image resources.
-* **Viewport Tracking Constraints:** Passing custom parameter constraints like `maxBoundsViscosity={1.0}` and `minZoom={17}` locks the user viewport camera context strictly onto the school building footprint lines, blocking panning access to extraneous map regions.
-* **Reflection Collection Processing:** Evaluating `{Object.keys(dnhsNodes).map()}` acts like an advanced reflection algorithm array loop. It reads the string descriptors from our data dictionary ledger as a linear index layout collection, running an iterative loop to dynamically instantiate a separate visual `<Marker>` layer tracking to that key's coordinates array.
-* **AP CSA Analogy:** Works identically to utilizing a key set lookup traversal loop across a Java data structure map:
+### 2. Mechanics Breakdown & AP CSA Analogy
+* **Separation of Concerns:** Splitting data into `dnhsLandmarks` and `dnhsRoutingGrid` separates user-facing visual waypoints from the raw mathematical coordinates backend. This ensures the client UI stays clean while providing the hidden grid layers required by routing calculations.
+* **Graph Adjacency Lists:** The `dnhsPaths` ledger represents a **Graph Data Structure Adjacency List**. It explicitly outlines direct walkway pathways by mapping a specific node key to an array string collection of its immediate spatial neighbors.
+* **AP CSA Analogy:** Maps directly to an instantiated object tracking structure containing nested array collections:
   ```java
-  for(String nodeName : dnhsNodes.keySet()) {
-      double[] coords = dnhsNodes.get(nodeName);
-      map.addMarker(new Marker(nodeName, coords));
-  }
+  HashMap<String, ArrayList<String>> dnhsPaths = new HashMap<>();
   ```
 
 ---
 
-## Module 3: Stateful User Profiling & Optional Local Storage Caching
+## Module 3: Rapid-Fire Edge Connection Workspace & Event Guards
 
-### 1. Production Code Blueprint (`src/pages/OnboardingPage.jsx`)
+### 1. Production Code Blueprint (`src/pages/MapPage.jsx`)
 ```jsx
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-function OnboardingPage() {
-  const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [grade, setGrade] = useState('9');
-  const [morningSpot, setMorningSpot] = useState('The Hawk Central Quad');
-  const [officeHoursSpot, setOfficeHoursSpot] = useState('Campus Library');
-  const [lunchSpot, setLunchSpot] = useState('The Hawk Central Quad');
-
-  const handleOnboardingSubmit = (e) => {
-    e.preventDefault();
-    localStorage.setItem('studentName', name || 'Del Norte Guest');
-    localStorage.setItem('studentGrade', grade);
-    localStorage.setItem('morningSpot', morningSpot);
-    localStorage.setItem('officeHoursSpot', officeHoursSpot);
-    localStorage.setItem('lunchSpot', lunchSpot);
-    localStorage.setItem('hasCompletedOnboarding', 'true');
-    navigate('/map');
-  };
-
-  return (
-    <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f2f5' }}>
-      <form onSubmit={handleOnboardingSubmit} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '100%', maxWidth: '450px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>Welcome to Del Norte Navigator!</h2>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 'bold' }}>What is your name?</label>
-          <input type="text" placeholder="Enter your name (Optional)" value={name} onChange={(e) => setName(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc' }} />
-        </div>
-        {/* Dropdowns use unified layout configurations mapped identically to state mutators */}
-        <button type="submit" style={{ marginTop: '10px', padding: '14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>
-          Get Started
-        </button>
-      </form>
-    </div>
-  );
-}
-
-export default OnboardingPage;
+// Tracks dual-click mapping hooks natively
+const handleNodeClick = (nodeId) => {
+  if (!selectedNodeA) {
+    setSelectedNodeA(nodeId);
+  } else if (selectedNodeA === nodeId) {
+    setSelectedNodeA(null);
+  } else if (!selectedNodeB) {
+    setSelectedNodeB(nodeId);
+  }
+};
 ```
 
-### 2. Line-by-Line Mechanics & AP CSA Analogy
-
-#### Line segment: `const [name, setName] = useState('');`
+### 2. Mechanics Breakdown
+* **Event Bubbling Interception:** Map container overlay elements capture clicks on lower DOM hierarchies and bubble them to the background container canvas. Removing traditional Leaflet Popups and migrating to direct State-Hook selection variables deletes this propagation path, ensuring fast click registration.
+* **Viewport Hover State Shuttles:** Attaching `mouseover` and `mouseout` listener hooks to active `<CircleMarker>` elements allows our script to temporarily call `map.dragging.disable()`. This stops background map panning elements the exact millisecond a user grabs a custom node point, allowing precise node adjustments.

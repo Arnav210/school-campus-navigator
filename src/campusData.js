@@ -4,7 +4,6 @@
  */
 
 // === 🏛️ ARRAY 1: PUBLIC LANDMARKS & ENTRYWAY GATEWAYS ===
-// Renders natively as visual blue pin markers with interactive popups on the screen
 export const dnhsLandmarks = {
   "A Building (Administration & Counseling)": [33.01493, -117.12160],
   "Performing Arts Center": [33.01516, -117.12067],
@@ -23,7 +22,6 @@ export const dnhsLandmarks = {
 };
 
 // === 🟢 ARRAY 2: PRIVATE ROUTING JUNCTIONS & PATHWAY DOTS ===
-// Operates hidden behind the scenes to guide vector lines safely around building corners
 export const dnhsRoutingGrid = {
   "Node_5040": [33.01463, -117.12179],
   "Node_6659": [33.01470, -117.12174],
@@ -75,6 +73,55 @@ export const dnhsRoutingGrid = {
   "Node_6853": [33.01459, -117.12165]
 };
 
-// === 🔗 ARRAY 3: GRAPH ADJACENCY CONNECTIONS ===
-// Tracks open walkway paths connecting individual routing points together
-export const dnhsPaths = {};
+// === 🔗 ARRAY 3: GRAPH ADJACENCY MATRIX ===
+// Your complete hand-linked walkway network mapping file asset ledger
+export const dnhsPaths = {
+  "Node_5040": ["Node_6659","Node_6853","Node_9260"],
+  "Node_6659": ["Node_8554","Node_5040","Node_4327","Node_7952"],
+  "Node_4327": ["Node_3992","Node_6659"],
+  "Node_3992": ["Node_5736","Node_4327"],
+  "Node_5736": ["Node_1717","Node_3992"],
+  "Node_1717": ["Node_8554","Node_5736"],
+  "Node_8554": ["Node_6659","Node_1717","Node_3677"],
+  "Node_9260": ["Node_5040","Node_4283","Node_7952"],
+  "Node_4283": ["Node_9260","Node_2347"],
+  "Node_2347": ["Node_4283","Node_1862","Node_7952","Node_3122"],
+  "Node_1862": ["Node_2347","Node_8152","Node_9223"],
+  "Node_9223": ["Node_1862","Node_8445","Node_5661"],
+  "Node_3677": ["Node_6972","Node_8554","Node_7952","Node_3096"],
+  "Node_7952": ["Node_6853","Node_6972","Node_8152","Node_2347","Node_4611","Node_5460","Node_3677","Node_9260","Node_6659"],
+  "Node_3403": ["Node_5460","Node_9936","Node_7226","Node_5920"],
+  "Node_1779": ["Node_6972","Node_9936","Node_9670","Node_3096"],
+  "Node_8445": ["Node_4611","Node_9223","Node_7177","Node_9282"],
+  "Node_7226": ["Node_7177","Node_3403","Node_1163"],
+  "Node_9936": ["Node_3403","Node_1779","Node_9826","Node_5460"],
+  "Node_7177": ["Node_8445","Node_7226","Node_2132","Node_4611"],
+  "Node_3096": ["Node_3677","Node_2025","Node_9670","Node_1779"],
+  "Node_2025": ["Node_3096","Node_9246"],
+  "Node_9246": ["Node_2025"],
+  "Node_9670": ["Node_1779","Node_4779","Node_3096","Node_1453","Node_9826"],
+  "Node_4779": ["Node_9670"],
+  "Node_1453": ["Node_9670","Node_5197"],
+  "Node_3122": ["Node_2347","Node_7552","Node_4390"],
+  "Node_4390": ["Node_3122","Node_5661"],
+  "Node_5661": ["Node_4390","Node_9223","Node_8105","Node_9282"],
+  "Node_7552": ["Node_3122","Node_8004"],
+  "Node_8004": ["Node_7552","Node_9128"],
+  "Node_9128": ["Node_8004","Node_8105"],
+  "Node_8105": ["Node_5661","Node_9128","Node_3652"],
+  "Node_3652": ["Node_9282","Node_8105","Node_9144"],
+  "Node_9144": ["Node_3652","Node_3416","Node_2132"],
+  "Node_3416": ["Node_9144","Node_8766","Node_1163"],
+  "Node_8766": ["Node_3416","Node_5197","Node_5920"],
+  "Node_9282": ["Node_8445","Node_3652","Node_5661","Node_2132"],
+  "Node_5197": ["Node_8766","Node_1453","Node_9826"],
+  "Node_2132": ["Node_7177","Node_9144","Node_9282","Node_1163"],
+  "Node_1163": ["Node_7226","Node_3416","Node_2132","Node_5920"],
+  "Node_5920": ["Node_3403","Node_8766","Node_1163","Node_9826"],
+  "Node_9826": ["Node_9936","Node_5197","Node_5920","Node_9670"],
+  "Node_6972": ["Node_7952","Node_3677","Node_1779","Node_5460"],
+  "Node_5460": ["Node_4611","Node_3403","Node_6972","Node_7952","Node_9936"],
+  "Node_4611": ["Node_8152","Node_5460","Node_8445","Node_7952","Node_7177"],
+  "Node_8152": ["Node_1862","Node_4611","Node_7952"],
+  "Node_6853": ["Node_5040","Node_7952"]
+};
