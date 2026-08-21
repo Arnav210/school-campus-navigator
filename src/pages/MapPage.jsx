@@ -1,178 +1,186 @@
-import React, { useState, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
-import { dnhsLandmarks, dnhsRoutingGrid, dnhsPaths } from '../campusData';
-import { classroomLookup } from '../roomDatabase';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-const createModernMapPin = () => {
-  return L.divIcon({
-    html: `<svg width="24" height="34" viewBox="0 0 24 34" fill="none" xmlns="http://w3.org" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));"><path d="M12 0C5.37 0 0 5.37 0 12C0 21 12 34 12 34C12 34 24 21 24 12C24 5.37 18.63 0 12 0Z" fill="#0070f3"/><circle cx="12" cy="12" r="4" fill="white"/></svg>`,
-    className: 'dnhs-vector-pin',
-    iconSize: '24,34'.split(',').map(Number),
-    iconAnchor: '12,34'.split(',').map(Number),
-    popupAnchor: '0,-30'.split(',').map(Number)
-  });
-};
-
-function calculateDistance(coord1, coord2) {
-  const [lat1, lon1] = coord1;
-  const [lat2, lon2] = coord2;
-  const R = 6371000; 
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function findShortestPath(startNodeId, targetNodeId) {
-  const distances = {};
-  const previous = {};
-  let queue = [];
-
-  Object.keys(dnhsRoutingGrid).forEach((nodeId) => {
-    if (nodeId === startNodeId) {
-      distances[nodeId] = 0;
-      queue.push({ id: nodeId, dist: 0 });
-    } else {
-      distances[nodeId] = Infinity;
-      queue.push({ id: nodeId, dist: Infinity });
-    }
-    previous[nodeId] = null;
-  });
-
-  while (queue.length > 0) {
-    queue.sort((a, b) => a.dist - b.dist);
-    const current = queue.shift();
-    const u = current.id;
-
-    if (u === targetNodeId) {
-      const pathCoordinates = [];
-      let temp = targetNodeId;
-      while (temp !== null) {
-        pathCoordinates.unshift(dnhsRoutingGrid[temp]);
-        temp = previous[temp];
-      }
-      return pathCoordinates;
-    }
-
-    if (distances[u] === Infinity) break;
-
-    const neighbors = dnhsPaths[u] || [];
-    neighbors.forEach((neighborId) => {
-      const edgeWeight = calculateDistance(dnhsRoutingGrid[u], dnhsRoutingGrid[neighborId]);
-      const alt = distances[u] + edgeWeight;
-      
-      if (alt < distances[neighborId]) {
-        distances[neighborId] = alt;
-        previous[neighborId] = u;
-        queue = queue.map(q => q.id === neighborId ? { ...q, dist: alt } : q);
-      }
-    });
-  }
-  return null;
-}
 
 function MapPage() {
   const dnhsCenter = [33.01447, -117.12146];
   const dnhsMaxBounds = [[33.0175, -117.1255], [33.0115, -117.1175]];
   const mapRef = useRef(null);
 
-  // Search input state bindings
-  const [startRoomInput, setStartRoomInput] = useState('');
-  const [endRoomInput, setEndRoomInput] = useState('');
-  const [activeRoutePath, setActiveRoutePath] = useState(null);
+  // Stateful array tracking custom classroom asset markers
+  const [classrooms, setClassrooms] = useState([]);
 
-  const handleGenerateRoute = (e) => {
-    e.preventDefault();
-
-    // Map the selected input text directly to its parent network node
-    const startNodeId = classroomLookup[startRoomInput];
-    const endNodeId = classroomLookup[endRoomInput];
-
-    if (startNodeId && endNodeId) {
-      const computedPathPoints = findShortestPath(startNodeId, endNodeId);
-      setActiveRoutePath(computedPathPoints);
-    } else {
-      alert("Please select valid classroom options directly from the searchable lists.");
+  // Fetch previously calibrated classrooms from browser memory disk space upon boot load
+  useEffect(() => {
+    const savedRooms = localStorage.getItem('dnhs_calibrated_classroom_nodes');
+    if (savedRooms) {
+      try {
+        setClassrooms(JSON.parse(savedRooms));
+      } catch (e) {
+        console.error("Error reading browser memory cache ledger", e);
+      }
     }
+  }, []);
+
+  const saveClassroomsToDisk = (updatedRooms) => {
+    setClassrooms(updatedRooms);
+    localStorage.setItem('dnhs_calibrated_classroom_nodes', JSON.stringify(updatedRooms));
+  };
+
+  // ➕ Plus Operation Handler: Spawns a classroom node at the current map view center
+  const handleAddNewClassroom = () => {
+    let spawnLat = 33.01447;
+    let spawnLng = -117.12146;
+
+    if (mapRef.current) {
+      const currentMapCenter = mapRef.current.getCenter();
+      spawnLat = currentMapCenter.lat;
+      spawnLng = currentMapCenter.lng;
+    }
+
+    const uniqueId = String(Date.now().toString().slice(-4));
+    const newRoom = {
+      id: uniqueId,
+      name: `Room_${uniqueId}`,
+      lat: spawnLat,
+      lng: spawnLng
+    };
+
+    const updated = [...classrooms, newRoom];
+    saveClassroomsToDisk(updated);
+  };
+
+  const handleUpdatePosition = (id, newLatLng) => {
+    const updated = classrooms.map(r => r.id === id ? { ...r, lat: newLatLng.lat, lng: newLatLng.lng } : r);
+    saveClassroomsToDisk(updated);
+  };
+
+  const handleUpdateName = (id, newName) => {
+    const updated = classrooms.map(r => r.id === id ? { ...r, name: newName } : r);
+    saveClassroomsToDisk(updated);
+  };
+
+  const handleDeleteClassroom = (id) => {
+    const updated = classrooms.filter(r => r.id !== id);
+    saveClassroomsToDisk(updated);
+  };
+
+  const handleClearEverything = () => {
+    if (window.confirm("Are you sure you want to wipe out your entire calibrated classroom database?")) {
+      saveClassroomsToDisk([]);
+    }
+  };
+
+  // Compiles individual classroom entries into a pristine dictionary string block
+  const generateExportTextString = () => {
+    if (classrooms.length === 0) return '// No custom classroom nodes mapped across your campus canvas yet.';
+    
+    let blockString = 'export const classroomLookup = {\n';
+    classrooms.forEach((r, idx) => {
+      const isLast = idx === classrooms.length - 1;
+      blockString += `  "${r.name}": [${r.lat.toFixed(5)}, ${r.lng.toFixed(5)}]${isLast ? '' : ',\n'}`;
+    });
+    blockString += '\n};';
+    return blockString;
   };
 
   return (
     <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#f8f9fa' }}>
       
-      <div style={{ background: '#343a40', color: 'white', padding: '12px', borderRadius: '8px', marginBottom: '15px' }}>
-        <h3 style={{ margin: '0 0 4px 0', fontSize: '15px' }}>🧭 Del Norte Navigator: Classroom Finder</h3>
-        <p style={{ margin: 0, fontSize: '12px', color: '#bbb' }}>Type your room numbers or click the arrows to filter and select your custom walking path track.</p>
+      {/* Structural Workspace Header */}
+      <div style={{ background: '#0070f3', color: 'white', padding: '15px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', boxShadow: '0 4px 6px rgba(0,70,243,0.15)' }}>
+        <div>
+          <h3 style={{ margin: '0 0 4px 0', fontSize: '16px' }}>🛠️ Visual Classroom Asset Mapping IDE</h3>
+          <p style={{ margin: 0, fontSize: '12px', color: '#e0ecff' }}>Drop nodes at center, drag onto real classroom doorways, and assign room names natively.</p>
+        </div>
+        <button onClick={handleClearEverything} style={{ padding: '8px 14px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}>
+          Wipe Database Reset
+        </button>
       </div>
 
+      {/* Map Viewport Container */}
       <div style={{ width: '100%', height: '55vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd', marginBottom: '15px' }}>
         <MapContainer ref={mapRef} center={dnhsCenter} zoom={18} minZoom={17} maxZoom={18} maxBounds={dnhsMaxBounds} maxBoundsViscosity={1.0} style={{ height: '100%', width: '100%' }}>
-          <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer
+            attribution='&copy; OpenStreetMap contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-          {Object.keys(dnhsLandmarks).map((nodeName, index) => (
-            <Marker key={index} position={dnhsLandmarks[nodeName]} icon={createModernMapPin()} draggable={false}>
-              <Popup><strong>{nodeName}</strong></Popup>
-            </Marker>
+          {/* Render draggable classroom vector dots natively across the grid */}
+          {classrooms.map((room) => (
+            <CircleMarker
+              key={room.id}
+              center={[room.lat, room.lng]}
+              radius={7}
+              pathOptions={{ color: '#0070f3', fillColor: '#fff', fillOpacity: 1.0, weight: 3 }}
+              draggable={true}
+              eventHandlers={{
+                mouseover: () => {
+                  if (mapRef.current) mapRef.current.dragging.disable();
+                },
+                mouseout: () => {
+                  if (mapRef.current) mapRef.current.dragging.enable();
+                },
+                mousedown: (e) => {
+                  if (!mapRef.current) return;
+                  const mapInstance = mapRef.current;
+                  const handleMapMouseMove = (moveEvent) => {
+                    handleUpdatePosition(room.id, moveEvent.latlng);
+                  };
+                  const handleMapMouseUp = () => {
+                    mapInstance.off('mousemove', handleMapMouseMove);
+                    mapInstance.off('mouseup', handleMapMouseUp);
+                    mapInstance.dragging.enable();
+                  };
+                  mapInstance.on('mousemove', handleMapMouseMove);
+                  mapInstance.on('mouseup', handleMapMouseUp);
+                }
+              }}
+            >
+              <Popup>
+                <div style={{ padding: '5px', minWidth: '160px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#333' }}>Edit Classroom Label</div>
+                  
+                  <input 
+                    type="text" 
+                    value={room.name} 
+                    onChange={(e) => handleUpdateName(room.id, e.target.value)}
+                    style={{ padding: '6px', borderRadius: '4px', border: '1px solid #ccc', fontSize: '12px', width: '100%', boxSizing: 'border-box' }} 
+                  />
+                  
+                  <button 
+                    onClick={() => handleDeleteClassroom(room.id)} 
+                    style={{ padding: '6px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '11px', fontWeight: 'bold', width: '100%' }}
+                  >
+                    Delete Classroom Dot
+                  </button>
+                </div>
+              </Popup>
+            </CircleMarker>
           ))}
-
-          {activeRoutePath && (
-            <Polyline positions={activeRoutePath} pathOptions={{ color: '#0070f3', weight: 5, opacity: 0.9, lineCap: 'round' }} />
-          )}
         </MapContainer>
       </div>
 
-      {/* Modern Searchable Input Control Form Dashboard */}
-      <form onSubmit={handleGenerateRoute} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h4 style={{ margin: '0', color: '#0070f3' }}>🧭 Searchable Classroom Router</h4>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-          
-          {/* Searchable Starting Location Input Element */}
-          <div style={{ flex: '1', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>Starting Classroom</label>
-            <input 
-              list="startRoomsList" 
-              placeholder="Type to search room..." 
-              value={startRoomInput} 
-              onChange={(e) => setStartRoomInput(e.target.value)}
-              style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px' }}
-            />
-            <datalist id="startRoomsList">
-              {Object.keys(classroomLookup).map((roomName) => (
-                <option key={roomName} value={roomName} />
-              ))}
-            </datalist>
-          </div>
-
-          {/* Searchable Destination Location Input Element */}
-          <div style={{ flex: '1', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>Target Destination</label>
-            <input 
-              list="endRoomsList" 
-              placeholder="Type to search room..." 
-              value={endRoomInput} 
-              onChange={(e) => setEndRoomInput(e.target.value)}
-              style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px' }}
-            />
-            <datalist id="endRoomsList">
-              {Object.keys(classroomLookup).map((roomName) => (
-                <option key={roomName} value={roomName} />
-              ))}
-            </datalist>
-          </div>
-
-        </div>
-        
-        <button type="submit" disabled={!startRoomInput || !endRoomInput} style={{ padding: '12px', backgroundColor: (!startRoomInput || !endRoomInput) ? '#ccc' : '#0070f3', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
-          Compute Smart Classroom Route
+      {/* Control Action Buttons & Code Generator Output Panel */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        <button 
+          onClick={handleAddNewClassroom} 
+          style={{ width: '100%', padding: '14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(40,167,69,0.2)' }}
+        >
+          ➕ Drop New Classroom Dot Node at Center of View
         </button>
-      </form>
+
+        <div style={{ backgroundColor: 'white', padding: '15px', borderRadius: '12px', border: '1px solid #ddd', boxSizing: 'border-box', width: '100%', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+          <h4 style={{ margin: '0 0 5px 0', color: '#28a745' }}>📋 Real-Time Compiled Classroom Code Manifest</h4>
+          <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#666' }}>Your rooms parse dynamically into a hard data dictionary below. Click the text to auto-select and copy.</p>
+          <textarea
+            readOnly
+            value={generateExportTextString()}
+            style={{ width: '100%', height: '150px', background: '#272822', color: '#f8f8f2', padding: '12px', borderRadius: '8px', fontSize: '12px', fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' }}
+            onClick={(e) => e.target.select()}
+          />
+        </div>
+      </div>
 
     </div>
   );
