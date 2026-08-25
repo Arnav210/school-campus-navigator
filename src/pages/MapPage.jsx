@@ -1,55 +1,63 @@
-import React, { useState, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import React, { useState, useEffect, useRef } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Polyline } from 'react-leaflet';
 import { dnhsRoutingGrid, dnhsPaths } from '../campusData';
 import { classroomLookup } from '../roomDatabase';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-const createModernMapPin = () => {
-  const sizeArr = '24,34'.split(',').map(Number);
-  const anchorArr = '12,34'.split(',').map(Number);
-  return L.divIcon({
-    html: '<svg width="24" height="34" viewBox="0 0 24 34" fill="none" xmlns="http://w3.org"><path d="M12 0C5.37 0 0 5.37 0 12C0 21 12 34 12 34C12 34 24 21 24 12C24 5.37 18.63 0 12 0Z" fill="#0070f3"/><circle cx="12" cy="12" r="4" fill="white"/></svg>',
-    className: 'dnhs-vector-pin',
-    iconSize: sizeArr,
-    iconAnchor: anchorArr,
-    popupAnchor: [0, -30]
-  });
-};
 
 function calculateDistance(coord1, coord2) {
   const lat1 = coord1[0];
   const lon1 = coord1[1];
   const lat2 = coord2[0];
   const lon2 = coord2[1];
-  const R = 6371000; // Earth radius in meters
+  const R = 6371000; // Radius of Earth in meters
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
   return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
 }
 
-function findShortestPath(startRoom, endRoom) {
+function findShortestPath(startKey, endKey, gpsCoords = null) {
   const masterGraph = Object.assign({}, dnhsRoutingGrid, classroomLookup);
+  const dynamicPaths = Object.assign({}, dnhsPaths);
+
+  // If start is blank, bind user GPS to the nearest sidewalk vertex
+  if (startKey === 'USER_GPS_START' && gpsCoords) {
+    masterGraph['USER_GPS_START'] = gpsCoords;
+    let closestNode = null;
+    let shortestDist = Infinity;
+
+    Object.keys(dnhsRoutingGrid).forEach((nodeId) => {
+      const d = calculateDistance(gpsCoords, dnhsRoutingGrid[nodeId]);
+      if (d < shortestDist) {
+        shortestDist = d;
+        closestNode = nodeId;
+      }
+    });
+
+    if (closestNode) {
+      dynamicPaths['USER_GPS_START'] = [closestNode];
+      if (!dynamicPaths[closestNode]) dynamicPaths[closestNode] = [];
+      dynamicPaths[closestNode].push('USER_GPS_START');
+    }
+  }
+
   const distances = {};
   const previous = {};
   let queue = [];
 
-  // Initialize weights for all coordinates across both datasets
   Object.keys(masterGraph).forEach((id) => {
-    distances[id] = id === startRoom ? 0 : Infinity;
+    distances[id] = id === startKey ? 0 : Infinity;
     queue.push({ id: id, dist: distances[id] });
     previous[id] = null;
   });
 
   while (queue.length > 0) {
     queue.sort((a, b) => a.dist - b.dist);
-    const current = queue.shift();
-    const u = current.id;
+    const u = queue.shift().id;
 
-    if (u === endRoom) {
+    if (u === endKey) {
       const pathCoords = [];
-      let temp = endRoom;
+      let temp = endKey;
       while (temp !== null) {
         pathCoords.unshift(masterGraph[temp]);
         temp = previous[temp];
@@ -59,14 +67,10 @@ function findShortestPath(startRoom, endRoom) {
 
     if (distances[u] === Infinity) break;
 
-    const neighbors = dnhsPaths[u] || [];
+    const neighbors = dynamicPaths[u] || [];
     neighbors.forEach((neighborId) => {
-      // 🛠️ CRUCIAL ROUTING CONSTRAINT FILTER
-      // Skip this neighbor if it is a classroom node, UNLESS it is the target destination room
-      const isNeighborAClassroom = classroomLookup.hasOwnProperty(neighborId);
-      if (isNeighborAClassroom && neighborId !== endRoom) {
-        return; 
-      }
+      const isNeighborClassroom = classroomLookup.hasOwnProperty(neighborId);
+      if (isNeighborClassroom && neighborId !== endKey) return;
 
       const alt = distances[u] + calculateDistance(masterGraph[u], masterGraph[neighborId]);
       if (alt < distances[neighborId]) {
@@ -78,69 +82,137 @@ function findShortestPath(startRoom, endRoom) {
   }
   return null;
 }
-
 export default function MapPage() {
   const dnhsCenter = [33.01447, -117.12146];
   const dnhsMaxBounds = [[33.0175, -117.1255], [33.0115, -117.1175]];
   const mapRef = useRef(null);
 
-  const [startRoomInput, setStartRoomInput] = useState('');
-  const [endRoomInput, setEndRoomInput] = useState('');
-  const [activeRoutePath, setActiveRoutePath] = useState(null);
+  const [startInput, setStartInput] = useState('');
+  const [endInput, setEndInput] = useState('');
+  const [activeRoute, setActiveRoute] = useState(null);
 
-  const handleGenerateRoute = (e) => {
+  const [showStartBox, setShowStartBox] = useState(false);
+  const [showEndBox, setShowEndBox] = useState(false);
+  const [gpsCoords, setGpsCoords] = useState(null);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        setGpsCoords([pos.coords.latitude, pos.coords.longitude]);
+      },
+      (err) => console.error(err),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+    return () => navigator.geolocation.clearWatch(watchId);
+  }, []);
+
+  const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (classroomLookup[startRoomInput] && classroomLookup[endRoomInput]) {
-      const computedPathPoints = findShortestPath(startRoomInput, endRoomInput);
-      setActiveRoutePath(computedPathPoints);
+
+    const cleanEndInput = endInput.trim().toUpperCase();
+    const finalEndKey = Object.keys(classroomLookup).find(k => k.toUpperCase() === cleanEndInput);
+
+    let finalStartKey = null;
+    const isStartFieldEmpty = startInput.trim() === '';
+
+    if (isStartFieldEmpty) {
+      if (!gpsCoords) {
+        alert('Calibrating high-precision GPS. Please verify location permissions are active on your device.');
+        return;
+      }
+      finalStartKey = 'USER_GPS_START';
     } else {
-      alert("Please select valid classrooms from the lists.");
+      const cleanStartInput = startInput.trim().toUpperCase();
+      finalStartKey = Object.keys(classroomLookup).find(k => k.toUpperCase() === cleanStartInput);
+    }
+
+    if (finalStartKey && finalEndKey) {
+      const calculatedPoints = findShortestPath(finalStartKey, finalEndKey, gpsCoords);
+      setActiveRoute(calculatedPoints);
+    } else {
+      alert('Spelling mismatch. Please select classrooms directly out of the auto-complete dropdown panels.');
     }
   };
 
+  const getFilteredOptions = (currentText) => {
+    const allOptions = Object.keys(classroomLookup);
+    if (!currentText) return allOptions;
+    const cleanText = currentText.trim().toUpperCase();
+    return allOptions.filter(name => name.toUpperCase().indexOf(cleanText) !== -1);
+  };
+
   return (
-    <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#f8f9fa' }}>
+    <div style={{ padding: '15px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#f8f9fa' }}>
       
-      <div style={{ background: '#343a40', color: 'white', padding: '12px', borderRadius: '8px', marginBottom: '15px' }}>
-        <h3 style={{ margin: '0 0 4px 0', fontSize: '15px' }}>🧭 Del Norte Navigator: Production Routing Engine</h3>
-        <p style={{ margin: 0, fontSize: '12px', color: '#bbb' }}>Type your room numbers or select options to map out your classroom-to-classroom sidewalk routes instantly.</p>
+      <div style={{ background: '#343a40', color: 'white', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
+        <h3 style={{ margin: '0 0 2px 0', fontSize: '14px' }}>🧭 Del Norte Navigator: PWA Production Build</h3>
+        <p style={{ margin: 0, fontSize: '11px', color: '#bbb' }}>Type a starting room or leave the field completely blank to route straight from your live footsteps.</p>
       </div>
 
-      <div style={{ width: '100%', height: '55vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd', marginBottom: '15px' }}>
+      <div style={{ width: '100%', height: '50vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd', marginBottom: '12px' }}>
         <MapContainer ref={mapRef} center={dnhsCenter} zoom={18} minZoom={17} maxZoom={18} maxBounds={dnhsMaxBounds} style={{ height: '100%', width: '100%' }}>
           <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-          {startRoomInput && classroomLookup[startRoomInput] && (
-            <Marker position={classroomLookup[startRoomInput]} icon={createModernMapPin()}><Popup><strong>Start: {startRoomInput}</strong></Popup></Marker>
-          )}
-          {endRoomInput && classroomLookup[endRoomInput] && (
-            <Marker position={classroomLookup[endRoomInput]} icon={createModernMapPin()}><Popup><strong>End: {endRoomInput}</strong></Popup></Marker>
+          {gpsCoords && (
+            <CircleMarker center={gpsCoords} radius={7} pathOptions={{ color: '#fff', fillColor: '#28a745', fillOpacity: 1.0, weight: 2.5 }} />
           )}
 
-          {activeRoutePath && (
-            <Polyline positions={activeRoutePath} pathOptions={{ color: '#0070f3', weight: 6, opacity: 0.9, lineCap: 'round' }} />
+          {activeRoute && (
+            <Polyline positions={activeRoute} pathOptions={{ color: '#0070f3', weight: 6, opacity: 0.9, lineCap: 'round', interactive: false }} />
           )}
         </MapContainer>
       </div>
 
-      <form onSubmit={handleGenerateRoute} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        <h4 style={{ margin: '0', color: '#0070f3' }}>🧭 Searchable Classroom Router</h4>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-          
-          <div style={{ flex: '1', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>Starting Classroom</label>
-            <input list="startRoomsList" placeholder="Type room (e.g. S101)..." value={startRoomInput} onChange={(e) => setStartRoomInput(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px' }} />
-            <datalist id="startRoomsList">{Object.keys(classroomLookup).map(k => <option key={k} value={k} />)}</datalist>
-          </div>
-
-          <div style={{ flex: '1', minWidth: '150px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>Target Destination</label>
-            <input list="endRoomsList" placeholder="Type room (e.g. B125)..." value={endRoomInput} onChange={(e) => setEndRoomInput(e.target.value)} style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px' }} />
-            <datalist id="endRoomsList">{Object.keys(classroomLookup).map(k => <option key={k} value={k} />)}</datalist>
-          </div>
-
+      <form onSubmit={handleFormSubmit} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '12px', border: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        
+        {/* Optional Starting Classroom Selector Input */}
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>
+            Starting Classroom <span style={{ color: '#999', fontWeight: 'normal' }}>(Optional - Leave blank for Current Location)</span>
+          </label>
+          <input 
+            type="text"
+            placeholder="Type room number or leave blank..."
+            value={startInput}
+            onFocus={() => { setStartInput(''); setShowStartBox(true); }}
+            onChange={(e) => setStartInput(e.target.value)}
+            onBlur={() => setTimeout(() => setShowStartBox(false), 250)}
+            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', width: '100%', boxSizing: 'border-box' }}
+          />
+          {showStartBox && (
+            <div style={{ position: 'absolute', top: '58px', left: 0, right: 0, zIndex: 1000, maxHeight: '150px', overflowY: 'auto', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '6px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+              {getFilteredOptions(startInput).map(name => (
+                <div key={name} onMouseDown={() => { setStartInput(name); setShowStartBox(false); }} style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}>{name}</div>
+              ))}
+            </div>
+          )}
         </div>
-        <button type="submit" disabled={!startRoomInput || !endRoomInput} style={{ padding: '12px', backgroundColor: (!startRoomInput || !endRoomInput) ? '#ccc' : '#0070f3', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>Compute Optimized Campus Route</button>
+
+        {/* Target Destination Classroom Selector Input */}
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>Target Classroom Destination</label>
+          <input 
+            type="text"
+            placeholder="Type target destination (e.g. b125)..."
+            value={endInput}
+            onFocus={() => { setEndInput(''); setShowEndBox(true); }}
+            onChange={(e) => setEndInput(e.target.value)}
+            onBlur={() => setTimeout(() => setShowEndBox(false), 250)}
+            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', width: '100%', boxSizing: 'border-box' }}
+          />
+          {showEndBox && (
+            <div style={{ position: 'absolute', top: '58px', left: 0, right: 0, zIndex: 1000, maxHeight: '150px', overflowY: 'auto', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '6px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+              {getFilteredOptions(endInput).map(name => (
+                <div key={name} onMouseDown={() => { setEndInput(name); setShowEndBox(false); }} style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}>{name}</div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button type="submit" disabled={!endInput} style={{ padding: '12px', backgroundColor: !endInput ? '#ccc' : '#0070f3', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
+          Compute Optimized Campus Route
+        </button>
       </form>
 
     </div>
