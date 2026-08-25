@@ -20,7 +20,6 @@ function findShortestPath(startKey, endKey, gpsCoords = null) {
   const masterGraph = Object.assign({}, dnhsRoutingGrid, classroomLookup);
   const dynamicPaths = Object.assign({}, dnhsPaths);
 
-  // If start is blank, bind user GPS to the nearest sidewalk vertex
   if (startKey === 'USER_GPS_START' && gpsCoords) {
     masterGraph['USER_GPS_START'] = gpsCoords;
     let closestNode = null;
@@ -82,6 +81,7 @@ function findShortestPath(startKey, endKey, gpsCoords = null) {
   }
   return null;
 }
+
 export default function MapPage() {
   const dnhsCenter = [33.01447, -117.12146];
   const dnhsMaxBounds = [[33.0175, -117.1255], [33.0115, -117.1175]];
@@ -94,6 +94,9 @@ export default function MapPage() {
   const [showStartBox, setShowStartBox] = useState(false);
   const [showEndBox, setShowEndBox] = useState(false);
   const [gpsCoords, setGpsCoords] = useState(null);
+
+  const [routeStartPos, setRouteStartPos] = useState(null);
+  const [routeEndPos, setRouteEndPos] = useState(null);
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -118,20 +121,23 @@ export default function MapPage() {
 
     if (isStartFieldEmpty) {
       if (!gpsCoords) {
-        alert('Calibrating high-precision GPS. Please verify location permissions are active on your device.');
+        alert('Calibrating hardware satellite telemetry. Please verify device location permissions are active.');
         return;
       }
       finalStartKey = 'USER_GPS_START';
+      setRouteStartPos(gpsCoords);
     } else {
       const cleanStartInput = startInput.trim().toUpperCase();
       finalStartKey = Object.keys(classroomLookup).find(k => k.toUpperCase() === cleanStartInput);
+      if (finalStartKey) setRouteStartPos(classroomLookup[finalStartKey]);
     }
 
     if (finalStartKey && finalEndKey) {
+      setRouteEndPos(classroomLookup[finalEndKey]);
       const calculatedPoints = findShortestPath(finalStartKey, finalEndKey, gpsCoords);
       setActiveRoute(calculatedPoints);
     } else {
-      alert('Spelling mismatch. Please select classrooms directly out of the auto-complete dropdown panels.');
+      alert('Spelling error. Please select options directly from the auto-complete dropdown panels.');
     }
   };
 
@@ -146,8 +152,8 @@ export default function MapPage() {
     <div style={{ padding: '15px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#f8f9fa' }}>
       
       <div style={{ background: '#343a40', color: 'white', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
-        <h3 style={{ margin: '0 0 2px 0', fontSize: '14px' }}>🧭 Del Norte Navigator: PWA Production Build</h3>
-        <p style={{ margin: 0, fontSize: '11px', color: '#bbb' }}>Type a starting room or leave the field completely blank to route straight from your live footsteps.</p>
+        <h3 style={{ margin: '0 0 2px 0', fontSize: '14px' }}>🧭 Del Norte Navigator: Production Build</h3>
+        <p style={{ margin: 0, fontSize: '11px', color: '#bbb' }}>Type a start room or leave it completely blank to route dynamically from your real-time position.</p>
       </div>
 
       <div style={{ width: '100%', height: '50vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd', marginBottom: '12px' }}>
@@ -155,18 +161,25 @@ export default function MapPage() {
           <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
           {gpsCoords && (
-            <CircleMarker center={gpsCoords} radius={7} pathOptions={{ color: '#fff', fillColor: '#28a745', fillOpacity: 1.0, weight: 2.5 }} />
+            <CircleMarker center={gpsCoords} radius={5} pathOptions={{ color: '#fff', fillColor: '#28a745', fillOpacity: 1.0, weight: 2 }} />
           )}
 
           {activeRoute && (
             <Polyline positions={activeRoute} pathOptions={{ color: '#0070f3', weight: 6, opacity: 0.9, lineCap: 'round', interactive: false }} />
+          )}
+
+          {activeRoute && routeStartPos && (
+            <CircleMarker center={routeStartPos} radius={7} pathOptions={{ color: '#fff', fillColor: '#0070f3', fillOpacity: 1.0, weight: 2.5 }} />
+          )}
+          {activeRoute && routeEndPos && (
+            <CircleMarker center={routeEndPos} radius={7} pathOptions={{ color: '#fff', fillColor: '#dc3545', fillOpacity: 1.0, weight: 2.5 }} />
           )}
         </MapContainer>
       </div>
 
       <form onSubmit={handleFormSubmit} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '12px', border: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '12px' }}>
         
-        {/* Optional Starting Classroom Selector Input */}
+        {/* Optional Starting Classroom Input */}
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>
             Starting Classroom <span style={{ color: '#999', fontWeight: 'normal' }}>(Optional - Leave blank for Current Location)</span>
@@ -178,18 +191,18 @@ export default function MapPage() {
             onFocus={() => { setStartInput(''); setShowStartBox(true); }}
             onChange={(e) => setStartInput(e.target.value)}
             onBlur={() => setTimeout(() => setShowStartBox(false), 250)}
-            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', width: '100%', boxSizing: 'border-box' }}
+            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px', width: '100%', boxSizing: 'border-box' }}
           />
           {showStartBox && (
-            <div style={{ position: 'absolute', top: '58px', left: 0, right: 0, zIndex: 1000, maxHeight: '150px', overflowY: 'auto', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '6px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <div style={{ position: 'absolute', top: '62px', left: 0, right: 0, zIndex: 1000, maxHeight: '150px', overflowY: 'auto', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '6px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
               {getFilteredOptions(startInput).map(name => (
-                <div key={name} onMouseDown={() => { setStartInput(name); setShowStartBox(false); }} style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}>{name}</div>
+                <div key={name} onMouseDown={() => { setStartInput(name); setShowStartBox(false); }} style={{ padding: '8px 12px', fontSize: '14px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}>{name}</div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Target Destination Classroom Selector Input */}
+        {/* Target Destination Classroom Input */}
         <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>Target Classroom Destination</label>
           <input 
@@ -199,12 +212,12 @@ export default function MapPage() {
             onFocus={() => { setEndInput(''); setShowEndBox(true); }}
             onChange={(e) => setEndInput(e.target.value)}
             onBlur={() => setTimeout(() => setShowEndBox(false), 250)}
-            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '13px', width: '100%', boxSizing: 'border-box' }}
+            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px', width: '100%', boxSizing: 'border-box' }}
           />
           {showEndBox && (
-            <div style={{ position: 'absolute', top: '58px', left: 0, right: 0, zIndex: 1000, maxHeight: '150px', overflowY: 'auto', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '6px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <div style={{ position: 'absolute', top: '62px', left: 0, right: 0, zIndex: 1000, maxHeight: '150px', overflowY: 'auto', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '6px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
               {getFilteredOptions(endInput).map(name => (
-                <div key={name} onMouseDown={() => { setEndInput(name); setShowEndBox(false); }} style={{ padding: '8px 12px', fontSize: '12px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}>{name}</div>
+                <div key={name} onMouseDown={() => { setEndInput(name); setShowEndBox(false); }} style={{ padding: '8px 12px', fontSize: '14px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}>{name}</div>
               ))}
             </div>
           )}
