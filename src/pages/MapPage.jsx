@@ -3,13 +3,14 @@ import { MapContainer, TileLayer, CircleMarker, Polyline } from 'react-leaflet';
 import { dnhsRoutingGrid, dnhsPaths } from '../campusData';
 import { classroomLookup } from '../roomDatabase';
 import 'leaflet/dist/leaflet.css';
+import '../styles/MapPage.css'; // Professional CSS Style Architecture Import Link Pass
 
 function calculateDistance(coord1, coord2) {
   const lat1 = coord1[0];
   const lon1 = coord1[1];
   const lat2 = coord2[0];
   const lon2 = coord2[1];
-  const R = 6371000; // Radius of Earth in meters
+  const R = 6371000; // Earth footprint radius in meters
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -149,40 +150,44 @@ export default function MapPage() {
   };
 
   return (
-    <div style={{ padding: '15px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', backgroundColor: '#f8f9fa' }}>
+    <div className="navigator-container">
       
-      <div style={{ background: '#343a40', color: 'white', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
-        <h3 style={{ margin: '0 0 2px 0', fontSize: '14px' }}>🧭 Del Norte Navigator: Production Build</h3>
-        <p style={{ margin: 0, fontSize: '11px', color: '#bbb' }}>Type a start room or leave it completely blank to route dynamically from your real-time position.</p>
+      {/* Del Norte Corporate Varsity Header Box */}
+      <div className="brand-header-card">
+        <h3>Del Norte Navigator</h3>
+        <p>Type your classroom target endpoints or leave the first field completely blank to route straight from your live footprints.</p>
       </div>
 
-      <div style={{ width: '100%', height: '50vh', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', border: '1px solid #ddd', marginBottom: '12px' }}>
+      {/* Forest Green Map Canvas Border Layer Viewport */}
+      <div className="map-viewport-frame">
         <MapContainer ref={mapRef} center={dnhsCenter} zoom={18} minZoom={17} maxZoom={18} maxBounds={dnhsMaxBounds} style={{ height: '100%', width: '100%' }}>
           <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
           {gpsCoords && (
-            <CircleMarker center={gpsCoords} radius={5} pathOptions={{ color: '#fff', fillColor: '#28a745', fillOpacity: 1.0, weight: 2 }} />
+            <CircleMarker center={gpsCoords} radius={5} pathOptions={{ color: '#fff', fillColor: '#ffc72c', fillOpacity: 1.0, weight: 2 }} />
           )}
 
           {activeRoute && (
-            <Polyline positions={activeRoute} pathOptions={{ color: '#0070f3', weight: 6, opacity: 0.9, lineCap: 'round', interactive: false }} />
+            <Polyline positions={activeRoute} pathOptions={{ color: '#0070f3', weight: 6, opacity: 0.95, lineCap: 'round', interactive: false }} />
           )}
 
           {activeRoute && routeStartPos && (
             <CircleMarker center={routeStartPos} radius={7} pathOptions={{ color: '#fff', fillColor: '#0070f3', fillOpacity: 1.0, weight: 2.5 }} />
           )}
           {activeRoute && routeEndPos && (
-            <CircleMarker center={routeEndPos} radius={7} pathOptions={{ color: '#fff', fillColor: '#dc3545', fillOpacity: 1.0, weight: 2.5 }} />
+            <CircleMarker center={routeEndPos} radius={7} pathOptions={{ color: '#fff', fillColor: '#438046', fillOpacity: 1.0, weight: 2.5 }} />
           )}
         </MapContainer>
       </div>
 
-      <form onSubmit={handleFormSubmit} style={{ backgroundColor: 'white', padding: '15px', borderRadius: '12px', border: '1px solid #eee', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+      {/* Lighter Dark Blue Control Panel Card Container Box */}
+      <form onSubmit={handleFormSubmit} className="control-dashboard-box">
+        <h4>Search Dashboard</h4>
         
-        {/* Optional Starting Classroom Input */}
-        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>
-            Starting Classroom <span style={{ color: '#999', fontWeight: 'normal' }}>(Optional - Leave blank for Current Location)</span>
+        {/* Starting Input Field Box */}
+        <div className="input-field-group">
+          <label>
+            Starting Classroom <span>(Optional - Leave blank for Current Location)</span>
           </label>
           <input 
             type="text"
@@ -191,20 +196,20 @@ export default function MapPage() {
             onFocus={() => { setStartInput(''); setShowStartBox(true); }}
             onChange={(e) => setStartInput(e.target.value)}
             onBlur={() => setTimeout(() => setShowStartBox(false), 250)}
-            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px', width: '100%', boxSizing: 'border-box' }}
+            className="navigator-text-input"
           />
           {showStartBox && (
-            <div style={{ position: 'absolute', top: '62px', left: 0, right: 0, zIndex: 1000, maxHeight: '150px', overflowY: 'auto', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '6px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <div className="autocomplete-overlay-dropdown">
               {getFilteredOptions(startInput).map(name => (
-                <div key={name} onMouseDown={() => { setStartInput(name); setShowStartBox(false); }} style={{ padding: '8px 12px', fontSize: '14px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}>{name}</div>
+                <div key={name} onMouseDown={() => { setStartInput(name); setShowStartBox(false); }} className="dropdown-item-row">{name}</div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Target Destination Classroom Input */}
-        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <label style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}>Target Classroom Destination</label>
+        {/* Target Destination Input Field Box */}
+        <div className="input-field-group">
+          <label>Target Classroom Destination</label>
           <input 
             type="text"
             placeholder="Type target destination (e.g. b125)..."
@@ -212,19 +217,20 @@ export default function MapPage() {
             onFocus={() => { setEndInput(''); setShowEndBox(true); }}
             onChange={(e) => setEndInput(e.target.value)}
             onBlur={() => setTimeout(() => setShowEndBox(false), 250)}
-            style={{ padding: '10px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '16px', width: '100%', boxSizing: 'border-box' }}
+            className="navigator-text-input"
           />
           {showEndBox && (
-            <div style={{ position: 'absolute', top: '62px', left: 0, right: 0, zIndex: 1000, maxHeight: '150px', overflowY: 'auto', backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '6px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <div className="autocomplete-overlay-dropdown">
               {getFilteredOptions(endInput).map(name => (
-                <div key={name} onMouseDown={() => { setEndInput(name); setShowEndBox(false); }} style={{ padding: '8px 12px', fontSize: '14px', cursor: 'pointer', borderBottom: '1px solid #f0f0f0' }}>{name}</div>
+                <div key={name} onMouseDown={() => { setEndInput(name); setShowEndBox(false); }} className="dropdown-item-row">{name}</div>
               ))}
             </div>
           )}
         </div>
 
-        <button type="submit" disabled={!endInput} style={{ padding: '12px', backgroundColor: !endInput ? '#ccc' : '#0070f3', color: 'white', border: 'none', borderRadius: '6px', fontSize: '14px', fontWeight: 'bold', cursor: 'pointer' }}>
-          Compute Optimized Campus Route
+        {/* Forest Green Route Actions Activation Button */}
+        <button type="submit" disabled={!endInput} className="compute-route-button">
+          Find Campus Route
         </button>
       </form>
 

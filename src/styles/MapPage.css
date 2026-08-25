@@ -1,0 +1,158 @@
+/* Del Norte Navigator - Modern Dark Theme Architecture Stylesheet */
+
+/* Main Page Layout Wrapper Wrapper */
+.navigator-container {
+  padding: 15px;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 100vh;
+  font-family: sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* Main Branding Title Header Box */
+.brand-header-card {
+  background-color: #0d233a; /* Official Del Norte Deep Navy Blue */
+  color: #ffc72c;            /* Vibrant Athletic Gold Text */
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 6px rgba(13, 35, 58, 0.15);
+}
+
+.brand-header-card h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.brand-header-card p {
+  margin: 0;
+  font-size: 11px;
+  color: #a2b7cf; /* Soft blue tint for readable subtitle strings */
+}
+
+/* The Map Viewport Wrapper Frame */
+.map-viewport-frame {
+  width: 100%;
+  height: 50vh;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 3px solid #1e4620; /* Solid Forest Green Frame Border Line */
+  margin-bottom: 12px;
+  box-sizing: border-box;
+}
+
+/* The Slightly Lighter Dark Blue Control Panel Container Card */
+.control-dashboard-box {
+  background-color: #1a365d; /* Slightly Lighter Dark Blue Base */
+  border: 2px solid #0d233a; /* Outlined with Crisp Deep Navy Blue Border */
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.control-dashboard-box h4 {
+  margin: 0;
+  color: #ffc72c; /* Athletic Gold Accent */
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* Form Input Layout Stack Fields Groups */
+.input-field-group {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-field-group label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #ffc72c; /* Gold Input Field Label text tags */
+}
+
+.input-field-group label span {
+  color: #a2b7cf;
+  font-weight: normal;
+}
+
+/* Dark Slate-Blue Text Field Elements Inputs */
+.navigator-text-input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid #0d233a;       /* Deep Navy Outline default states */
+  background-color: #2a4365;      /* Dark Slate Blue Input Background */
+  color: #ffffff;                 /* High-Contrast Pristine White text value strings */
+  font-size: 16px;                /* Bumps size up to 16px to permanently stop mobile screen zoom-jumps */
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Focused active selection state shifts outlines cleanly */
+.navigator-text-input:focus {
+  border-color: #ffc72c; /* Swaps outline to vibrant Gold upon user touch tap */
+  box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.2);
+}
+
+/* Scrollable Mobile Autocomplete Suggestion List Overlay Dropdowns */
+.autocomplete-overlay-dropdown {
+  position: absolute;
+  top: 64px;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  max-height: 150px;
+  overflow-y: auto;
+  background-color: #2a4365;      /* Matching Dark Slate Blue overlay container background */
+  border: 2px solid #0d233a;      /* Navy Blue Border */
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.dropdown-item-row {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #ffffff;                 /* White item listings text strings */
+  cursor: pointer;
+  border-bottom: 1px solid #1a365d;
+  transition: background-color 0.15s;
+}
+
+.dropdown-item-row:hover, .dropdown-item-row:active {
+  background-color: #1a365d;      /* Highlight selection row */
+  color: #ffc72c;                 /* Changes row target list item parameter text to Gold */
+}
+
+/* The Compute Route Action Execution Button */
+.compute-route-button {
+  padding: 14px;
+  background-color: #1e4620;      /* Thick Dark Forest Green layout background fill */
+  color: #ffffff;                 /* High-contrast crisp white bold title values text */
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+  box-shadow: 0 4px 6px rgba(30, 70, 32, 0.2);
+}
+
+.compute-route-button:hover:not(:disabled) {
+  background-color: #275929;      /* Lightens slightly upon hover mouse glide checks */
+}
+
+.compute-route-button:disabled {
+  background-color: #1a2a1b;      /* Grayed out muting tint indicators when empty */
+  color: #666666;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
