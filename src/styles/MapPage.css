@@ -156,3 +156,29 @@
   box-shadow: none;
   opacity: 0.6;
 }
+
+/* Developer Network Grid Toggle Container Styling */
+.toggle-panel-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #0d233a; /* Deep Navy Accent */
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #1a365d;
+  margin-top: 4px;
+}
+
+.toggle-label-text {
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffc72c; /* Vibrant Athletic Gold text */
+}
+
+.toggle-input-switch {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #ffc72c; /* Locks checkbox check colors to athletic Gold */
+}
+
