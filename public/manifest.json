@@ -1,0 +1,21 @@
+{
+  "short_name": "DNHS Navigator",
+  "name": "Del Norte High School Campus Navigator",
+  "icons": [
+    {
+      "src": "/school-campus-navigator/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/school-campus-navigator/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/school-campus-navigator/map",
+  "display": "standalone",
+  "theme_color": "#0d233a",
+  "background_color": "#1a365d",
+  "orientation": "portrait"
+}
