@@ -31,30 +31,30 @@ function OnboardingPage() {
   };
 
   return (
-    <div style={{ padding: '20px', boxSizing: 'border-box', width: '100%', minHeight: '100vh', fontFamily: 'sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f0f2f5' }}>
-      
-      <form onSubmit={handleOnboardingSubmit} style={{ backgroundColor: 'white', padding: '30px', borderRadius: '12px', width: '100%', maxWidth: '450px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <main className="onboarding-page">
+      <form className="onboarding-card" onSubmit={handleOnboardingSubmit}>
         
-        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-          <h2 style={{ margin: '0 0 8px 0', color: '#0070f3' }}>Welcome to Del Norte Navigator!</h2>
-          <p style={{ margin: '0 0 12px 0', color: '#444', fontSize: '14px', lineHeight: '1.4' }}>
-            An intelligent campus mapping utility built to parse schedules and generate optimized outdoor walking routes between your classes.
+        <div className="onboarding-heading">
+          <span className="section-eyebrow">Del Norte High School</span>
+          <h1>Del Norte Navigator</h1>
+          <p>
+            Welcome to Navigator. Find your classrooms and the walking paths that connect them.
           </p>
-          <p style={{ margin: 0, color: '#666', fontSize: '13px', fontStyle: 'italic' }}>
-            Please fill out the below information for the best experience. (Optional)
+          <p>
+            All details below are optional.
           </p>
         </div>
 
         {/* Name Parameter - No "required" flag to allow total bypass flexibility */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>What is your name?</label>
-          <input type="text" placeholder="Enter your name (Optional)" value={name} onChange={(e) => setName(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px' }} />
+        <div className="input-field-group">
+          <label htmlFor="student-name">What is your name?</label>
+          <input id="student-name" type="text" placeholder="Enter your name (Optional)" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
 
         {/* Grade Option Selection */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>Grade</label>
-          <select value={grade} onChange={(e) => setGrade(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', backgroundColor: 'white' }}>
+        <div className="input-field-group">
+          <label htmlFor="student-grade">Grade</label>
+          <select id="student-grade" value={grade} onChange={(e) => setGrade(e.target.value)}>
             <option value="9">9th Grade (Freshman)</option>
             <option value="10">10th Grade (Sophomore)</option>
             <option value="11">11th Grade (Junior)</option>
@@ -63,9 +63,9 @@ function OnboardingPage() {
         </div>
 
         {/* Morning Location Options */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>Morning Spot</label>
-          <select value={morningSpot} onChange={(e) => setMorningSpot(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', backgroundColor: 'white' }}>
+        <div className="input-field-group">
+          <label htmlFor="morning-spot">Morning Spot</label>
+          <select id="morning-spot" value={morningSpot} onChange={(e) => setMorningSpot(e.target.value)}>
             <option value="The Hawk Central Quad">The Hawk Central Quad</option>
             <option value="Campus Library">Campus Library</option>
             <option value="Main Gymnasium & Athletics">Main Gymnasium & Athletics</option>
@@ -74,18 +74,18 @@ function OnboardingPage() {
         </div>
 
         {/* Office Hours Location Options */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>Office Hours Spot</label>
-          <select value={officeHoursSpot} onChange={(e) => setOfficeHoursSpot(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', backgroundColor: 'white' }}>
+        <div className="input-field-group">
+          <label htmlFor="office-spot">Office Hours Spot</label>
+          <select id="office-spot" value={officeHoursSpot} onChange={(e) => setOfficeHoursSpot(e.target.value)}>
             <option value="Campus Library">Campus Library</option>
             <option value="The Hawk Central Quad">The Hawk Central Quad</option>
           </select>
         </div>
 
         {/* Lunch Location Options */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '13px', fontWeight: 'bold', color: '#333' }}>Lunch Spot</label>
-          <select value={lunchSpot} onChange={(e) => setLunchSpot(e.target.value)} style={{ padding: '12px', borderRadius: '6px', border: '1px solid #ccc', fontSize: '14px', backgroundColor: 'white' }}>
+        <div className="input-field-group">
+          <label htmlFor="lunch-spot">Lunch Spot</label>
+          <select id="lunch-spot" value={lunchSpot} onChange={(e) => setLunchSpot(e.target.value)}>
             <option value="The Hawk Central Quad">The Hawk Central Quad</option>
             <option value="Campus Library">Campus Library</option>
             <option value="Main Gymnasium & Athletics">Main Gymnasium & Athletics</option>
@@ -93,12 +93,12 @@ function OnboardingPage() {
         </div>
 
         {/* Form Submission Button */}
-        <button type="submit" style={{ marginTop: '10px', padding: '14px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '6px', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 2px 6px rgba(40,167,69,0.3)' }}>
-          Get Started
+        <button className="compute-route-button" type="submit">
+          Explore campus ↗
         </button>
 
       </form>
-    </div>
+    </main>
   );
 }
 

@@ -1,247 +1,79 @@
-/* Del Norte Navigator - Modern Dark Theme Architecture Stylesheet */
-
-/* Main Page Layout Wrapper Wrapper */
+/* Light surfaces and strong school colors keep the interface readable outdoors. */
 .navigator-container {
-  padding: 15px;
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 100vh;
-  font-family: sans-serif;
-  background-color: #f8f9fa;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 16px 16px max(24px, env(safe-area-inset-bottom));
 }
-
-/* Main Branding Title Header Box */
-.brand-header-card {
-  background-color: #0d233a; /* Official Del Norte Deep Navy Blue */
-  color: #ffc72c;            /* Vibrant Athletic Gold Text */
-  padding: 15px;
-  border-radius: 12px;
-  margin-bottom: 12px;
-  box-shadow: 0 4px 6px rgba(13, 35, 58, 0.15);
+.brand-header-card { display: flex; align-items: center; gap: 12px; padding: 18px; margin-bottom: 16px; background: var(--navy); color: var(--gold); border-radius: 10px; border-bottom: 3px solid var(--gold); box-shadow: 0 4px 12px #102d4914; }
+.brand-mark { display: grid; place-items: center; flex: 0 0 48px; height: 52px; background: #1c3e5d; color: var(--gold); border-radius: 15px 15px 15px 4px; }
+.brand-mark svg { width: 34px; height: 34px; }
+.brand-eyebrow, .section-eyebrow { color: var(--green); font-size: 11px; line-height: 1.5; font-weight: 800; letter-spacing: 1.25px; text-transform: uppercase; }
+.brand-copy h1 { font-size: 29px; line-height: 1.15; letter-spacing: -1.2px; font-weight: 800; }
+.brand-eyebrow { color: #e0eaf3; }
+.campus-workspace { display: grid; gap: 18px; }
+.map-panel, .route-panel { min-width: 0; }
+.map-viewport-frame { width: 100%; height: clamp(300px, 43svh, 520px); border-radius: 10px; overflow: hidden; border: 2px solid var(--green); box-shadow: 0 5px 18px #102d4910; isolation: isolate; background: #e4eadd; }
+.leaflet-container { font-family: inherit; }
+.leaflet-container .leaflet-control-zoom { border: 1px solid #9cafa4; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px #102d491a; }
+.leaflet-container .leaflet-control-zoom a { width: 36px; height: 36px; line-height: 36px; color: var(--navy); }
+.location-controls-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 2px 0; color: var(--muted); font-size: 12px; font-weight: 600; }
+.location-controls-row > span { display: flex; align-items: center; gap: 7px; }
+.location-controls-row > span::before { content: ''; flex: 0 0 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.recenter-button { display: inline-flex; justify-content: center; align-items: center; gap: 7px; min-height: 44px; padding: 10px 14px; border: 1px solid #b7c5ce; border-radius: 7px; background: #fff; color: var(--navy); font-size: 13px; font-weight: 750; cursor: pointer; }
+.recenter-button svg { width: 18px; height: 18px; }
+.recenter-button:disabled { color: #596874; background: #e9edee; cursor: not-allowed; }
+.recenter-button:hover:not(:disabled) { background: #eaf0f4; }
+.control-dashboard-box { background: var(--navy); border: 1px solid #173b5c; border-radius: 10px; padding: 20px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 6px 24px #102d4907; }
+.dashboard-heading { padding-bottom: 2px; }
+.dashboard-heading h2 { color: var(--gold); font-size: 20px; line-height: 1.25; letter-spacing: -.4px; }
+.control-dashboard-box .input-field-group label { color: #fff; }
+.control-dashboard-box .input-field-group label span, .control-dashboard-box .field-hint { color: #d0ddea; }
+.control-dashboard-box .compute-route-button { border-color: #5c866a; }
+.input-field-group { position: relative; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.input-field-group label { color: var(--navy); font-size: 14px; font-weight: 750; line-height: 1.4; }
+.input-field-group label span { color: var(--muted); font-size: 12px; font-weight: 500; margin-left: 5px; }
+.navigator-text-input, .onboarding-card input, .onboarding-card select { width: 100%; min-height: 54px; padding: 14px; border-radius: 7px; border: 1px solid #9facb6; background: #f8faf9; color: var(--navy); font-size: 16px; transition: border-color .15s, box-shadow .15s; }
+.navigator-text-input::placeholder, .onboarding-card input::placeholder { color: #526474; opacity: 1; }
+.navigator-text-input:focus, .onboarding-card input:focus, .onboarding-card select:focus { border-color: var(--navy); background: #fff; box-shadow: 0 0 0 3px #f5c54866; outline: none; }
+.field-hint { font-size: 12px; color: var(--muted); line-height: 1.5; }
+.autocomplete-overlay-dropdown { position: absolute; top: 83px; left: 0; right: 0; z-index: 2000; max-height: 220px; overflow-y: auto; background: #fff; border: 1px solid #9facb6; border-radius: 7px; box-shadow: 0 10px 24px #102d4926; }
+.dropdown-item-row { display: block; width: 100%; min-height: 46px; padding: 13px 15px; border: 0; border-bottom: 1px solid #e0e6e3; background: #fff; text-align: left; font-size: 15px; font-weight: 600; color: var(--navy); cursor: pointer; }
+.dropdown-item-row:hover, .dropdown-item-row:active, .dropdown-item-row:focus-visible { background: #fff3cd; color: var(--navy); }
+.compute-route-button { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 56px; padding: 15px 20px; border: 1px solid var(--green); border-radius: 8px; color: #fff; background: linear-gradient(#356d4b, #204b36); font-size: 16px; font-weight: 750; cursor: pointer; margin-bottom: 7px; box-shadow: 0 7px 0 #0b2819, 0 10px 12px #00000035, inset 0 2px 0 #83b593, inset 0 -2px 0 #163c27; transition: background .15s, transform .15s, box-shadow .15s; }
+.compute-route-button span { font-size: 22px; line-height: 1; color: var(--gold); }
+.compute-route-button:hover:not(:disabled) { background: linear-gradient(#407c56, #285e40); transform: translateY(-1px); box-shadow: 0 8px 0 #0b2819, 0 12px 14px #00000035, inset 0 2px 0 #91c3a1; }
+.compute-route-button:active:not(:disabled) { transform: translateY(5px); box-shadow: 0 2px 0 #0b2819, 0 3px 5px #00000025, inset 0 1px 0 #83b593; }
+.compute-route-button:disabled { background: #e1e7e3; border-color: #c1cdc5; color: #526158; cursor: not-allowed; box-shadow: 0 5px 0 #98a99e, 0 7px 8px #00000020, inset 0 2px 0 #ffffffb3; }
+.compute-route-button:disabled span { color: #526158; }
+.toggle-panel-row { order: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid #496279; min-height: 44px; }
+.toggle-label-text { font-size: 12px; font-weight: 600; color: #d0ddea; cursor: pointer; }
+.toggle-input-switch { width: 22px; height: 22px; margin: 0; accent-color: var(--gold); cursor: pointer; }
+.route-summary-card { margin-bottom: 16px; padding: 18px 20px; border: 1px solid #c4d3df; border-left: 5px solid var(--navy); border-radius: 10px; background: #eaf1f7; color: var(--navy); }
+.route-summary-arrived { background: #e8f2e9; border-color: #b1c9b7; border-left-color: var(--green); }
+.route-summary-destination { font-size: 13px; font-weight: 750; }
+.route-summary-metrics { margin-top: 7px; font-size: 20px; font-weight: 800; line-height: 1.35; letter-spacing: -.4px; }
+.route-statistics { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.route-statistics > div { display: flex; flex-direction: column; gap: 4px; }
+.route-statistics > div + div { border-left: 1px solid #b4c6d5; padding-left: 18px; }
+.route-statistics strong { font-size: 27px; line-height: 1.15; letter-spacing: -1px; }
+.route-statistics span { font-size: 12px; color: #394f60; }
+.route-summary-note { margin-top: 7px; font-size: 12px; color: #394f60; line-height: 1.6; }
+.onboarding-page { min-height: 100svh; display: grid; place-items: center; padding: 28px 18px; border-top: 5px solid var(--gold); }
+.onboarding-card { width: 100%; max-width: 480px; padding: 28px; border: 1px solid #d5ddda; background: #fff; border-radius: 12px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 12px 40px #102d4908; }
+.onboarding-heading { border-bottom: 1px solid #e0e6e3; padding-bottom: 22px; }
+.onboarding-heading h1 { font-size: 38px; letter-spacing: -1.5px; line-height: 1.12; margin: 10px 0 16px; }
+.onboarding-heading p { font-size: 14px; color: var(--muted); line-height: 1.65; margin-top: 10px; }
+@media (min-width: 900px) {
+  .navigator-container { padding: 24px; }
+  .map-viewport-frame { height: 50svh; max-height: 540px; }
 }
-
-.brand-header-card h3 {
-  margin: 0 0 4px 0;
-  font-size: 16px;
-  font-weight: bold;
+@media (max-width: 360px) {
+  .navigator-container { padding: 18px 12px; }
+  .brand-header-card { gap: 9px; }
+  .brand-copy h1 { font-size: 26px; }
+  .brand-eyebrow { font-size: 9px; }
+  .control-dashboard-box { padding: 18px; }
 }
-
-.brand-header-card p {
-  margin: 0;
-  font-size: 11px;
-  color: #a2b7cf; /* Soft blue tint for readable subtitle strings */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
-
-/* The Map Viewport Wrapper Frame */
-.map-viewport-frame {
-  width: 100%;
-  height: 50vh;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 3px solid #1e4620; /* Solid Forest Green Frame Border Line */
-  margin-bottom: 12px;
-  box-sizing: border-box;
-}
-
-/* The Slightly Lighter Dark Blue Control Panel Container Card */
-.control-dashboard-box {
-  background-color: #1a365d; /* Slightly Lighter Dark Blue Base */
-  border: 2px solid #0d233a; /* Outlined with Crisp Deep Navy Blue Border */
-  padding: 15px;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.control-dashboard-box h4 {
-  margin: 0;
-  color: #ffc72c; /* Athletic Gold Accent */
-  font-size: 13px;
-  font-weight: bold;
-}
-
-/* Form Input Layout Stack Fields Groups */
-.input-field-group {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.input-field-group label {
-  font-size: 11px;
-  font-weight: bold;
-  color: #ffc72c; /* Gold Input Field Label text tags */
-}
-
-.input-field-group label span {
-  color: #a2b7cf;
-  font-weight: normal;
-}
-
-/* Dark Slate-Blue Text Field Elements Inputs */
-.navigator-text-input {
-  padding: 12px;
-  border-radius: 8px;
-  border: 2px solid #0d233a;       /* Deep Navy Outline default states */
-  background-color: #2a4365;      /* Dark Slate Blue Input Background */
-  color: #ffffff;                 /* High-Contrast Pristine White text value strings */
-  font-size: 16px;                /* Bumps size up to 16px to permanently stop mobile screen zoom-jumps */
-  width: 100%;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-/* Focused active selection state shifts outlines cleanly */
-.navigator-text-input:focus {
-  border-color: #ffc72c; /* Swaps outline to vibrant Gold upon user touch tap */
-  box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.2);
-}
-
-/* Scrollable Mobile Autocomplete Suggestion List Overlay Dropdowns */
-.autocomplete-overlay-dropdown {
-  position: absolute;
-  top: 64px;
-  left: 0;
-  right: 0;
-  z-index: 2000;
-  max-height: 150px;
-  overflow-y: auto;
-  background-color: #2a4365;      /* Matching Dark Slate Blue overlay container background */
-  border: 2px solid #0d233a;      /* Navy Blue Border */
-  border-radius: 8px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-.dropdown-item-row {
-  padding: 10px 14px;
-  font-size: 13px;
-  color: #ffffff;                 /* White item listings text strings */
-  cursor: pointer;
-  border-bottom: 1px solid #1a365d;
-  transition: background-color 0.15s;
-}
-
-.dropdown-item-row:hover, .dropdown-item-row:active {
-  background-color: #1a365d;      /* Highlight selection row */
-  color: #ffc72c;                 /* Changes row target list item parameter text to Gold */
-}
-
-/* The Compute Route Action Execution Button */
-.compute-route-button {
-  padding: 14px;
-  background-color: #1e4620;      /* Thick Dark Forest Green layout background fill */
-  color: #ffffff;                 /* High-contrast crisp white bold title values text */
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background-color 0.2s, opacity 0.2s;
-  box-shadow: 0 4px 6px rgba(30, 70, 32, 0.2);
-}
-
-.compute-route-button:hover:not(:disabled) {
-  background-color: #275929;      /* Lightens slightly upon hover mouse glide checks */
-}
-
-.compute-route-button:disabled {
-  background-color: #1a2a1b;      /* Grayed out muting tint indicators when empty */
-  color: #666666;
-  cursor: not-allowed;
-  box-shadow: none;
-  opacity: 0.6;
-}
-
-/* Developer Network Grid Toggle Container Styling */
-.toggle-panel-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: #0d233a; /* Deep Navy Accent */
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #1a365d;
-  margin-top: 4px;
-}
-
-.toggle-label-text {
-  font-size: 12px;
-  font-weight: bold;
-  color: #ffc72c; /* Vibrant Athletic Gold text */
-}
-
-.toggle-input-switch {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-  accent-color: #ffc72c; /* Locks checkbox check colors to athletic Gold */
-}
-
-.location-controls-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-  color: #0d233a;
-  font-size: 12px;
-}
-
-.recenter-button {
-  min-height: 44px;
-  padding: 10px 16px;
-  border: 1px solid #0d233a;
-  border-radius: 8px;
-  background: #0d233a;
-  color: #ffc72c;
-  font: inherit;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.recenter-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.recenter-button:focus-visible {
-  outline: 3px solid #0070f3;
-  outline-offset: 2px;
-}
-
-.route-summary-card {
-  padding: 14px;
-  margin-bottom: 12px;
-  border-radius: 12px;
-  background: #0d233a;
-  color: #fff;
-  text-align: left;
-}
-
-.route-summary-arrived {
-  background: #1e4620;
-}
-
-.route-summary-destination {
-  color: #ffc72c;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.route-summary-metrics {
-  margin-top: 4px;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.route-summary-note {
-  margin-top: 4px;
-  font-size: 12px;
-  line-height: 1.5;
-}
-

@@ -7,7 +7,12 @@ import '../styles/MapPage.css';
 import { calculateDistance, findShortestPath, smoothRoute } from '../routing.js';
 
 function MapFollowControl({ onPause }) {
-  useMapEvents({ dragstart: onPause });
+  const map = useMapEvents({ dragstart: onPause });
+  useEffect(() => {
+    const observer = new ResizeObserver(() => map.invalidateSize());
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
+  }, [map]);
   return null;
 }
 
@@ -135,10 +140,14 @@ export default function MapPage() {
     <div className="navigator-container">
       
       {/* Brand Header Banner Component Box */}
-      <div className="brand-header-card">
-        <h3>Del Norte Navigator</h3>
-        <p>Choose a start room or leave it blank to use your real-time position.</p>
-      </div>
+      <header className="brand-header-card">
+        <div className="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="currentColor" strokeWidth="1.5"/><path d="m21 10-3 9-7 3 3-9 7-3Z" fill="currentColor"/><circle cx="16" cy="16" r="2" fill="#102d49"/></svg>
+        </div>
+        <div className="brand-copy"><p className="brand-eyebrow">Del Norte High School</p><h1>Navigator</h1></div>
+      </header>
+      <div className="campus-workspace">
+      <section className="map-panel" aria-label="Campus map and location controls">
 
       {/* Map Element Interactive Viewport Frame Area */}
       <div className="map-viewport-frame">
@@ -196,10 +205,12 @@ export default function MapPage() {
       <div className="location-controls-row">
         <span>{!gpsCoords ? 'Waiting for location' : followPosition ? 'Following your location' : 'Map following paused'}</span>
         <button type="button" className="recenter-button" disabled={!gpsCoords} onClick={handleRecenter}>
-          Recenter
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="2"/><circle cx="12" cy="12" r="2" fill="currentColor"/><path d="M12 2v4m0 12v4M2 12h4m12 0h4" stroke="currentColor" strokeWidth="2"/></svg> Recenter
         </button>
       </div>
 
+      </section>
+      <section className="route-panel" aria-label="Walking directions">
       {liveGpsRoute && !activeRoute && (
         <div className="route-summary-card" role="status">
           <p>GPS routing is paused. Your location is too far from the mapped campus walkways.</p>
@@ -210,9 +221,14 @@ export default function MapPage() {
       {activeRoute && (
         <div className={`route-summary-card${hasArrived ? ' route-summary-arrived' : ''}`}>
           <p className="route-summary-destination">To {routeRequest.end}</p>
-          <p className="route-summary-metrics">
-            {hasArrived ? 'You have arrived!' : routeDistance < 1 ? 'Start and destination are the same location' : `${distanceLabel}${liveGpsRoute ? ' remaining' : ' total'} · About ${walkingMinutes} min walking`}
-          </p>
+          {hasArrived || routeDistance < 1 ? (
+            <p className="route-summary-metrics">{hasArrived ? 'You have arrived!' : 'Start and destination are the same location'}</p>
+          ) : (
+            <div className="route-statistics">
+              <div><strong>{distanceLabel}</strong><span>{liveGpsRoute ? 'Remaining' : 'Total distance'}</span></div>
+              <div><strong>~{walkingMinutes} min</strong><span>Estimated walk</span></div>
+            </div>
+          )}
           <p className="route-summary-note" role="status">
             {hasArrived
               ? `You’re near ${routeRequest.end}. Check the room sign to confirm.`
@@ -223,26 +239,27 @@ export default function MapPage() {
 
       {/* Control Input Selector Dashboard Form Capsule Container */}
       <form onSubmit={handleFormSubmit} className="control-dashboard-box">
-        <h4>Search Dashboard</h4>
+        <div className="dashboard-heading"><h2>Search dashboard</h2></div>
         
         {/* Optional Starting Classroom Input Element */}
         <div className="input-field-group">
-          <label>
-            Starting Classroom <span>(Optional - Leave blank for Current Location)</span>
-          </label>
+          <label htmlFor="start-room">Starting point <span>Optional</span></label>
           <input 
             type="text"
-            placeholder="Type room number or leave blank..."
+            id="start-room"
+            aria-describedby="start-room-hint"
+            placeholder="Current location or room"
             value={startInput}
             onFocus={function() { setStartInput(''); setShowStartBox(true); }}
             onChange={function(e) { setStartInput(e.target.value); }}
             onBlur={function() { setTimeout(function() { setShowStartBox(false); }, 250); }}
             className="navigator-text-input"
           />
+          <p className="field-hint" id="start-room-hint">Leave blank to use your location on campus.</p>
           {showStartBox && (
             <div className="autocomplete-overlay-dropdown">
               {getFilteredOptions(startInput).map(function(name) {
-                return <div key={name} onMouseDown={function() { setStartInput(name); setShowStartBox(false); }} className="dropdown-item-row">{name}</div>;
+                return <button type="button" key={name} onClick={function() { setStartInput(name); setShowStartBox(false); }} className="dropdown-item-row">{name}</button>;
               })}
             </div>
           )}
@@ -250,10 +267,11 @@ export default function MapPage() {
 
         {/* Target Destination Classroom Input Element */}
         <div style={{ position: 'relative' }} className="input-field-group">
-          <label>Target Classroom Destination</label>
+          <label htmlFor="end-room">Where to?</label>
           <input 
             type="text"
-            placeholder="Type target destination (e.g. b125)..."
+            id="end-room"
+            placeholder="Search a room or place, e.g. B125"
             value={endInput}
             onFocus={function() { setEndInput(''); setShowEndBox(true); }}
             onChange={function(e) { setEndInput(e.target.value); }}
@@ -263,29 +281,32 @@ export default function MapPage() {
           {showEndBox && (
             <div className="autocomplete-overlay-dropdown">
               {getFilteredOptions(endInput).map(function(name) {
-                return <div key={name} onMouseDown={function() { setEndInput(name); setShowEndBox(false); }} className="dropdown-item-row">{name}</div>;
+                return <button type="button" key={name} onClick={function() { setEndInput(name); setShowEndBox(false); }} className="dropdown-item-row">{name}</button>;
               })}
             </div>
           )}
         </div>
 
+        {/* Form Execution Routing Activation Button */}
+        <button type="submit" disabled={!endInput} className="compute-route-button">
+          Find walking route <span aria-hidden="true">↗</span>
+        </button>
+
         {/* Interactive Checkbox Control Row triggering Developer Layer visibility */}
         <div className="toggle-panel-row">
-          <span className="toggle-label-text">Show Routing Network Graph Layer</span>
+          <label htmlFor="network-toggle" className="toggle-label-text">Show walkway network</label>
           <input 
-            type="checkbox" 
+            type="checkbox"
+            id="network-toggle"
             checked={showDevNetwork} 
             onChange={function(e) { setShowDevNetwork(e.target.checked); }} 
             className="toggle-input-switch"
           />
         </div>
 
-        {/* Form Execution Routing Activation Button */}
-        <button type="submit" disabled={!endInput} className="compute-route-button">
-          Find Route
-        </button>
       </form>
-
+      </section>
+      </div>
     </div>
   );
 }
