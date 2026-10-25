@@ -5,7 +5,7 @@
 
 export const classroomLookup = {
   "Library": [33.01470, -117.12184],
-  "Administration": [33.01456, -117.12187],
+  "Nighthawk Center": [33.01456, -117.12187],
   "Cafeteria": [33.01406, -117.12184],
   "Food Service": [33.01428, -117.12194],
   "S101": [33.01496, -117.11998],

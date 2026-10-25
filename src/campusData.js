@@ -5,7 +5,7 @@
 
 // === ARRAY 1: PUBLIC LANDMARKS & ENTRYWAY GATEWAYS ===
 export const dnhsLandmarks = {
-  "A Building (Administration & Counseling)": [33.01493, -117.12160],
+  "A Building (Nighthawk Center & Counseling)": [33.01493, -117.12160],
   "Performing Arts Center": [33.01516, -117.12067],
   "L1/L2 Buildings (Classrooms)": [33.01473, -117.12066], 
   "S Building (Classrooms)": [33.01466, -117.12003],
@@ -76,14 +76,14 @@ export const dnhsRoutingGrid = {
 // === ARRAY 3: GRAPH ADJACENCY MATRIX ===
 // Your complete hand-linked walkway network mapping file asset ledger
 export const dnhsPaths = {
-  "Node_5040": ["Node_6659","Node_6853","Node_9260","Administration","Library"],
+  "Node_5040": ["Node_6659","Node_6853","Node_9260","Nighthawk Center","Library"],
   "Node_6659": ["Node_8554","Node_5040","Node_4327","Node_7952","Library"],
   "Node_4327": ["Node_6659","Node_3992"],
   "Node_3992": ["Node_5736","Node_4327","A101","A151","A150","A102"],
   "Node_5736": ["Node_1717","Node_3992","A150","A144","A102","A107"],
   "Node_1717": ["Node_8554","Node_5736","A116","A144","A124","A125","A135","A148"],
   "Node_8554": ["Node_6659","Node_1717","Node_3677","A148","A135","A144"],
-  "Node_9260": ["Node_5040","Node_4283","Node_7952","Administration"],
+  "Node_9260": ["Node_5040","Node_4283","Node_7952","Nighthawk Center"],
   "Node_4283": ["Node_9260","Node_2347","Food Service"],
   "Node_2347": ["Node_4283","Node_1862","Node_7952","Node_3122","Food Service","Cafeteria"],
   "Node_1862": ["Node_2347","Node_8152","Node_9223","Cafeteria"],
@@ -125,7 +125,7 @@ export const dnhsPaths = {
   "Node_8152": ["Node_1862","Node_4611","Node_7952","Food Service"],
   "Node_6853": ["Node_5040","Node_7952"],
   "Library": ["Node_6659","Node_5040"],
-  "Administration": ["Node_5040","Node_9260"],
+  "Nighthawk Center": ["Node_5040","Node_9260"],
   "Cafeteria": ["Node_2347","Node_1862","Node_9223","Node_3122","Node_4390","Node_5661"],
   "Food Service": ["Node_4283","Node_2347","Node_8152"],
   "S101": ["Node_5197","Node_1453"],

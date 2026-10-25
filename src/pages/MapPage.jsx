@@ -1,85 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Polyline } from 'react-leaflet';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { MapContainer, TileLayer, CircleMarker, Polyline, useMapEvents } from 'react-leaflet';
 import { dnhsRoutingGrid, dnhsPaths } from '../campusData';
 import { classroomLookup } from '../roomDatabase';
 import 'leaflet/dist/leaflet.css';
 import '../styles/MapPage.css';
+import { calculateDistance, findShortestPath, smoothRoute } from '../routing.js';
 
-function calculateDistance(coord1, coord2) {
-  const lat1 = coord1[0];
-  const lon1 = coord1[1];
-  const lat2 = coord2[0];
-  const lon2 = coord2[1];
-  const R = 6371000; // Radius of Earth in meters
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-}
-
-function findShortestPath(startKey, endKey, gpsCoords = null) {
-  const masterGraph = Object.assign({}, dnhsRoutingGrid, classroomLookup);
-  const dynamicPaths = Object.assign({}, dnhsPaths);
-
-  if (startKey === 'USER_GPS_START' && gpsCoords) {
-    masterGraph['USER_GPS_START'] = gpsCoords;
-    let closestNode = null;
-    let shortestDist = Infinity;
-
-    Object.keys(dnhsRoutingGrid).forEach((nodeId) => {
-      const d = calculateDistance(gpsCoords, dnhsRoutingGrid[nodeId]);
-      if (d < shortestDist) {
-        shortestDist = d;
-        closestNode = nodeId;
-      }
-    });
-
-    if (closestNode) {
-      dynamicPaths['USER_GPS_START'] = [closestNode];
-      if (!dynamicPaths[closestNode]) dynamicPaths[closestNode] = [];
-      dynamicPaths[closestNode].push('USER_GPS_START');
-    }
-  }
-
-  const distances = {};
-  const previous = {};
-  let queue = [];
-
-  Object.keys(masterGraph).forEach((id) => {
-    distances[id] = id === startKey ? 0 : Infinity;
-    queue.push({ id: id, dist: distances[id] });
-    previous[id] = null;
-  });
-
-  while (queue.length > 0) {
-    queue.sort((a, b) => a.dist - b.dist);
-    const u = queue.shift().id;
-
-    if (u === endKey) {
-      const pathCoords = [];
-      let temp = endKey;
-      while (temp !== null) {
-        pathCoords.unshift(masterGraph[temp]);
-        temp = previous[temp];
-      }
-      return pathCoords;
-    }
-
-    if (distances[u] === Infinity) break;
-
-    const neighbors = dynamicPaths[u] || [];
-    neighbors.forEach((neighborId) => {
-      const isNeighborClassroom = classroomLookup.hasOwnProperty(neighborId);
-      if (isNeighborClassroom && neighborId !== endKey) return;
-
-      const alt = distances[u] + calculateDistance(masterGraph[u], masterGraph[neighborId]);
-      if (alt < distances[neighborId]) {
-        distances[neighborId] = alt;
-        previous[neighborId] = u;
-        queue = queue.map((q) => q.id === neighborId ? Object.assign({}, q, { dist: alt }) : q);
-      }
-    });
-  }
+function MapFollowControl({ onPause }) {
+  useMapEvents({ dragstart: onPause });
   return null;
 }
 
@@ -92,16 +20,46 @@ export default function MapPage() {
   /* Form and route tracking state hooks */
   const [startInput, setStartInput] = useState('');
   const [endInput, setEndInput] = useState('');
-  const [activeRoute, setActiveRoute] = useState(null);
+  const [routeRequest, setRouteRequest] = useState(null);
 
   /* Dropdown panel visibility states for mobile compatibility */
   const [showStartBox, setShowStartBox] = useState(false);
   const [showEndBox, setShowEndBox] = useState(false);
   const [gpsCoords, setGpsCoords] = useState(null);
+  const [gpsAccuracy, setGpsAccuracy] = useState(Infinity);
+  const [followPosition, setFollowPosition] = useState(false);
 
-  /* Terminal anchor state values for starting and ending dots */
-  const [routeStartPos, setRouteStartPos] = useState(null);
-  const [routeEndPos, setRouteEndPos] = useState(null);
+  // GPS routes recalculate as the watch reports movement; room-to-room routes stay fixed.
+  const liveGpsRoute = routeRequest?.start === 'USER_GPS_START';
+  const activeRoute = useMemo(() => {
+    if (!routeRequest) return null;
+    return findShortestPath(routeRequest.start, routeRequest.end, gpsCoords);
+  }, [routeRequest, gpsCoords]);
+  const displayedRoute = useMemo(() => smoothRoute(activeRoute), [activeRoute]);
+  const routeStartPos = activeRoute?.[0];
+  const routeEndPos = activeRoute?.[activeRoute.length - 1];
+  const routeDistance = activeRoute?.reduce((total, point, index) => (
+    index ? total + calculateDistance(activeRoute[index - 1], point) : total
+  ), 0) ?? 0;
+  // Arrival uses actual GPS proximity, not the snapped walkway position.
+  const hasArrived = Boolean(liveGpsRoute && gpsCoords && routeEndPos
+    && gpsAccuracy <= 20 && calculateDistance(gpsCoords, routeEndPos) <= 10);
+  const walkingMinutes = Math.max(1, Math.ceil(routeDistance / (1.4 * 60)));
+  const distanceLabel = routeDistance < 1000
+    ? `${Math.round(routeDistance)} m`
+    : `${(routeDistance / 1000).toFixed(1)} km`;
+
+  useEffect(() => {
+    if (followPosition && gpsCoords) {
+      mapRef.current?.panTo(gpsCoords, { animate: true, duration: 0.5 });
+    }
+  }, [followPosition, gpsCoords]);
+
+  const handleRecenter = () => {
+    if (!gpsCoords) return;
+    setFollowPosition(true);
+    mapRef.current?.panTo(gpsCoords, { animate: true, duration: 0.5 });
+  };
 
   /* Developer toggle state controlling visibility of the background grid network mesh */
   const [showDevNetwork, setShowDevNetwork] = useState(false);
@@ -112,6 +70,7 @@ export default function MapPage() {
     const watchId = navigator.geolocation.watchPosition(
       function(pos) {
         setGpsCoords([pos.coords.latitude, pos.coords.longitude]);
+        setGpsAccuracy(pos.coords.accuracy);
       },
       function(err) { console.error(err); },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -129,30 +88,32 @@ export default function MapPage() {
       return k.toUpperCase() === cleanEndInput;
     });
 
-    let finalStartKey = null;
+    let finalStartKey;
     const isStartFieldEmpty = startInput.trim() === '';
 
     /* Route dynamically from GPS if start input field is left completely blank */
     if (isStartFieldEmpty) {
       if (!gpsCoords) {
-        alert('Calibrating hardware satellite telemetry. Please verify device location permissions are active.');
+        alert('Waiting for your location. Please enable location access, or choose a starting room.');
         return;
       }
       finalStartKey = 'USER_GPS_START';
-      setRouteStartPos(gpsCoords);
     } else {
       const cleanStartInput = startInput.trim().toUpperCase();
       finalStartKey = Object.keys(classroomLookup).find(function(k) {
         return k.toUpperCase() === cleanStartInput;
       });
-      if (finalStartKey) setRouteStartPos(classroomLookup[finalStartKey]);
     }
 
     /* Execute graph path search if valid target elements are found */
     if (finalStartKey && finalEndKey) {
-      setRouteEndPos(classroomLookup[finalEndKey]);
       const calculatedPoints = findShortestPath(finalStartKey, finalEndKey, gpsCoords);
-      setActiveRoute(calculatedPoints);
+      if (!calculatedPoints) {
+        alert('No walking route was found. Please try another starting room.');
+        return;
+      }
+      setRouteRequest({ start: finalStartKey, end: finalEndKey });
+      setFollowPosition(finalStartKey === 'USER_GPS_START');
     } else {
       alert('Spelling error. Please select options directly from the auto-complete dropdown panels.');
     }
@@ -180,6 +141,7 @@ export default function MapPage() {
       {/* Map Element Interactive Viewport Frame Area */}
       <div className="map-viewport-frame">
         <MapContainer ref={mapRef} center={dnhsCenter} zoom={18} minZoom={17} maxZoom={18} maxBounds={dnhsMaxBounds} style={{ height: '100%', width: '100%' }}>
+          <MapFollowControl onPause={() => setFollowPosition(false)} />
           <TileLayer attribution='&copy; OpenStreetMap contributors' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
           {/* Layer Stacking Order Rule 1: Developer network elements render first in background */}
@@ -198,12 +160,12 @@ export default function MapPage() {
                 })}
                 
                 {/* Paint background sidewalk junctions as green circle rings */}
-                {dnhsRoutingGrid.hasOwnProperty(nodeId) && (
+                {Object.hasOwn(dnhsRoutingGrid, nodeId) && (
                   <CircleMarker center={posA} radius={4} pathOptions={{ color: '#28a745', fillColor: '#28a745', fillOpacity: 0.3, weight: 1, interactive: false }} />
                 )}
 
                 {/* Paint interior classroom doorstep coordinates as blue circle rings */}
-                {classroomLookup.hasOwnProperty(nodeId) && (
+                {Object.hasOwn(classroomLookup, nodeId) && (
                   <CircleMarker center={posA} radius={4} pathOptions={{ color: '#0070f3', fillColor: '#0070f3', fillOpacity: 0.3, weight: 1, interactive: false }} />
                 )}
               </React.Fragment>
@@ -216,7 +178,7 @@ export default function MapPage() {
           )}
 
           {activeRoute && (
-            <Polyline positions={activeRoute} pathOptions={{ color: '#0070f3', weight: 6, opacity: 0.9, lineCap: 'round', interactive: false }} />
+            <Polyline positions={displayedRoute} smoothFactor={0} pathOptions={{ color: '#0070f3', weight: 6, opacity: 0.9, lineCap: 'round', interactive: false }} />
           )}
 
           {/* Dynamic high-contrast waypoint terminal markers wrapping route ends */}
@@ -228,6 +190,27 @@ export default function MapPage() {
           )}
         </MapContainer>
       </div>
+
+      <div className="location-controls-row">
+        <span>{!gpsCoords ? 'Waiting for location' : followPosition ? 'Following your location' : 'Map following paused'}</span>
+        <button type="button" className="recenter-button" disabled={!gpsCoords} onClick={handleRecenter}>
+          Recenter
+        </button>
+      </div>
+
+      {activeRoute && (
+        <div className={`route-summary-card${hasArrived ? ' route-summary-arrived' : ''}`}>
+          <p className="route-summary-destination">To {routeRequest.end}</p>
+          <p className="route-summary-metrics">
+            {hasArrived ? 'You have arrived!' : routeDistance < 1 ? 'Start and destination are the same location' : `${distanceLabel}${liveGpsRoute ? ' remaining' : ' total'} · About ${walkingMinutes} min walking`}
+          </p>
+          <p className="route-summary-note" role="status">
+            {hasArrived
+              ? `You’re near ${routeRequest.end}. Check the room sign to confirm.`
+              : liveGpsRoute ? 'Updates as you move. Arrival is detected near your destination.' : 'Route preview. Leave the starting room blank to navigate from your location.'}
+          </p>
+        </div>
+      )}
 
       {/* Control Input Selector Dashboard Form Capsule Container */}
       <form onSubmit={handleFormSubmit} className="control-dashboard-box">

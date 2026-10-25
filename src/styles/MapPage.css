@@ -182,3 +182,66 @@
   accent-color: #ffc72c; /* Locks checkbox check colors to athletic Gold */
 }
 
+.location-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #0d233a;
+  font-size: 12px;
+}
+
+.recenter-button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid #0d233a;
+  border-radius: 8px;
+  background: #0d233a;
+  color: #ffc72c;
+  font: inherit;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.recenter-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.recenter-button:focus-visible {
+  outline: 3px solid #0070f3;
+  outline-offset: 2px;
+}
+
+.route-summary-card {
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: #0d233a;
+  color: #fff;
+  text-align: left;
+}
+
+.route-summary-arrived {
+  background: #1e4620;
+}
+
+.route-summary-destination {
+  color: #ffc72c;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.route-summary-metrics {
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.route-summary-note {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
