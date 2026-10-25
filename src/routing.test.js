@@ -46,6 +46,11 @@ test('invalid routes and unavailable GPS return null', () => {
   assert.equal(findShortestPath('USER_GPS_START', 'Library'), null);
 });
 
+test('off-campus GPS cannot create a misleading straight-line walking route', () => {
+  assert.equal(findShortestPath('USER_GPS_START', 'Library', [33.09, -117.12]), null);
+  assert.ok(findShortestPath('Library', 'Nighthawk Center', [33.09, -117.12]));
+});
+
 test('sharp turns are subtly rounded and endpoints are retained', () => {
   const route = [[33, -117], [33.0001, -117], [33.0001, -116.9999]];
   const original = JSON.stringify(route);

@@ -109,7 +109,9 @@ export default function MapPage() {
     if (finalStartKey && finalEndKey) {
       const calculatedPoints = findShortestPath(finalStartKey, finalEndKey, gpsCoords);
       if (!calculatedPoints) {
-        alert('No walking route was found. Please try another starting room.');
+        alert(finalStartKey === 'USER_GPS_START'
+          ? 'GPS walking routes are available near campus only. Choose a starting room to preview a campus route from home.'
+          : 'No walking route was found. Please try another starting room.');
         return;
       }
       setRouteRequest({ start: finalStartKey, end: finalEndKey });
@@ -197,6 +199,13 @@ export default function MapPage() {
           Recenter
         </button>
       </div>
+
+      {liveGpsRoute && !activeRoute && (
+        <div className="route-summary-card" role="status">
+          <p>GPS routing is paused. Your location is too far from the mapped campus walkways.</p>
+          <p className="route-summary-note">Return near campus, or choose a starting room to preview a route.</p>
+        </div>
+      )}
 
       {activeRoute && (
         <div className={`route-summary-card${hasArrived ? ' route-summary-arrived' : ''}`}>

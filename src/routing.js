@@ -36,7 +36,9 @@ export function findShortestPath(start, end, gpsCoords = null) {
         if (!closest || distance < closest.distance) closest = { a, b, position, distance };
       }
     }
-    if (!closest) return null;
+    // This graph covers campus walkways only, not streets leading to school.
+    // A distant GPS fix must not create a long straight-line "walking route".
+    if (!closest || closest.distance > 100) return null;
     points.GPS_WALKWAY = closest.position;
     paths[start] = ['GPS_WALKWAY'];
     paths.GPS_WALKWAY = [closest.a, closest.b];
