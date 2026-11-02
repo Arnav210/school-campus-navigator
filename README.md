@@ -20,6 +20,24 @@ The application accepts image uploads or screenshots of unstructured student sch
 *   **Tesseract.js** - On-device Convolutional Neural Network (CNN) for OCR processing
 *   **GitHub Actions** - Automated CI/CD production build compilation pipeline
 
+## Deploying and checking updates
+
+Run `npm test` and `npm run lint` before pushing to `main`. The Deploy to GitHub Pages
+workflow builds and publishes `dist`; it can also be started manually in Actions.
+GitHub Settings → Pages → Source must be set to **GitHub Actions**.
+
+The production build generates `sw.js` with a versioned cache containing the HTML
+and its matching JavaScript and CSS. Online navigation fetches current HTML;
+offline navigation uses the complete cached build. New workers activate immediately
+and the app reloads when its worker changes. Worker registration uses the Vite base
+path so it also works when the installed app opens directly at `/map`.
+
+Browsers with the original `dnhs-navigator-v1` worker may still show a blank page
+after this fix is deployed. Close and reopen the app, then reload once the new
+worker has installed. If needed, in browser DevTools → Application → Service
+Workers, unregister the worker for this site and reload. Schedule and profile data
+in localStorage are preserved; clearing all site data is unnecessary.
+
 ## Proprietary License & Intellectual Property Tracking
 
 This software and all accompanying documentation files are proprietary and confidential. 

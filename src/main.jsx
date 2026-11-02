@@ -9,10 +9,18 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-/* Continuous background service worker registration pipeline tracking hook */
-if ('serviceWorker' in navigator) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
   window.addEventListener('load', function() {
-    navigator.serviceWorker.register('./sw.js')
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`, {
+      scope: import.meta.env.BASE_URL,
+      updateViaCache: 'none',
+    })
       .then(function(reg) {
         console.log('Service Worker registered successfully inside scope:', reg.scope);
       })
